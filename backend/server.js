@@ -22,7 +22,20 @@ app.io = io;
 
 // ── Core middleware (order matters!) ─────────────────────────────────────────
 
-app.use(helmet());
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc:   ["'self'"],
+      scriptSrc:    ["'self'", "https://unpkg.com", "https://cdn.jsdelivr.net", "'unsafe-inline'", "'unsafe-eval'"],
+      styleSrc:     ["'self'", "https://fonts.googleapis.com", "'unsafe-inline'"],
+      fontSrc:      ["'self'", "https://fonts.gstatic.com", "data:"],
+      imgSrc:       ["'self'", "data:", "https:"],
+      connectSrc:   ["'self'", "https:"],
+      objectSrc:    ["'none'"],
+      upgradeInsecureRequests: [],
+    },
+  },
+}));
 app.use(cors({ origin: ALLOWED_ORIGIN, credentials: true }));
 app.use(express.json({ limit: '10kb' }));
 
