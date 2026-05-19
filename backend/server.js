@@ -6,7 +6,7 @@ const rateLimit = require("express-rate-limit");
 const http = require("http");
 const socketIo = require("socket.io");
 require("dotenv").config();
-const compression = require("compression");
+
 const path = require("path");
 
 const ALLOWED_ORIGIN = process.env.ALLOWED_ORIGIN || "http://localhost:5055";
@@ -21,7 +21,7 @@ const io = socketIo(server, {
 app.io = io;
 
 // ── Core middleware (order matters!) ─────────────────────────────────────────
-app.use(compression());
+
 app.use(helmet());
 app.use(cors({ origin: ALLOWED_ORIGIN, credentials: true }));
 app.use(express.json({ limit: '10kb' }));
