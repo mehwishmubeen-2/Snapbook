@@ -1,3 +1,4 @@
+// v1.0.1 — SEO meta tags added to frontend
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
