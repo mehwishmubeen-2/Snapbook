@@ -7,7 +7,6 @@ const http = require("http");
 const socketIo = require("socket.io");
 require("dotenv").config();
 const compression = require("compression");
-app.use(compression());
 const path = require("path");
 
 const ALLOWED_ORIGIN = process.env.ALLOWED_ORIGIN || "http://localhost:5055";
@@ -20,6 +19,8 @@ const io = socketIo(server, {
 
 // Attach io to app for use in controllers
 app.io = io;
+
+app.use(compression());
 
 // ── Security middleware ───────────────────────────────────────────────────────
 app.use(helmet());
