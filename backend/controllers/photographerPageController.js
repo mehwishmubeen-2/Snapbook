@@ -220,7 +220,8 @@ async function triggerAiSeoGeneration(profileId, userId) {
       PhotographerProfile.findById(profileId),
     ]);
 
-    if (!profile || profile.seoStatus !== "none") return;
+    // Allow triggering for profiles where seoStatus is undefined/null (old docs) or 'none'
+    if (!profile || (profile.seoStatus && profile.seoStatus !== "none")) return;
 
     // Mark immediately so we don't trigger twice
     await PhotographerProfile.findByIdAndUpdate(profileId, {
@@ -344,8 +345,9 @@ exports.servePhotographerPage = async (req, res) => {
       // ⏳ No approved tags yet — use instant fallback from raw data
       seo = buildFallbackSeo(profile, user);
 
-      // Trigger AI generation in background if not already started
-      if (profile.seoStatus === "none") {
+      // Trigger AI generation in background if not already started.
+      // Also handle existing DB docs where seoStatus was never set (undefined/null).
+      if (!profile.seoStatus || profile.seoStatus === "none") {
         const uid = profile.userId?._id || profile.userId;
         setImmediate(() => triggerAiSeoGeneration(profile._id, uid));
       }
