@@ -46,6 +46,10 @@ const GROQ_MODELS = [
 ];
 
 async function callGroq(systemPrompt, userMessage) {
+  if (!process.env.GROQ_API_KEY) {
+    console.error("[SEO-AI] GROQ_API_KEY is not set — add it to Render environment variables.");
+    return null;
+  }
   for (const model of GROQ_MODELS) {
     try {
       const response = await fetch(
@@ -67,7 +71,9 @@ async function callGroq(systemPrompt, userMessage) {
           }),
         }
       );
-      if (response.status === 429) continue; // rate limited, try next model
+      if (response.status === 429) { console.warn(`[SEO-AI] ${model} rate-limited, trying next.`); continue; }
+      if (response.status === 401) { console.error("[SEO-AI] Invalid GROQ_API_KEY (401). Check Render env vars."); return null; }
+      if (!response.ok) { console.error(`[SEO-AI] ${model} returned HTTP ${response.status}`); continue; }
       const data = await response.json();
       if (data.choices?.[0]?.message?.content) {
         return data.choices[0].message.content;
