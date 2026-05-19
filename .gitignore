@@ -9,6 +9,9 @@ backend/.env
 # Build/dist artifacts
 dist/
 build/
+# BUT track the frontend Vite build so Render doesn't need a build step
+!frontend/public/dist/
+!frontend/public/dist/**
 
 # Logs
 logs/

@@ -55,9 +55,12 @@ const authLimiter = rateLimit({
 app.use(express.static(path.join(__dirname, "../frontend/public"), {
   setHeaders(res, filePath) {
     if (filePath.endsWith('.html')) {
-      res.setHeader('Cache-Control', 'public, max-age=3600');          // 1 hour
+      res.setHeader('Cache-Control', 'no-cache');                        // always revalidate HTML
+    } else if (filePath.includes('/dist/')) {
+      // Built bundles: always revalidate via ETag (fast 304 when unchanged, fresh file when rebuilt)
+      res.setHeader('Cache-Control', 'no-cache');
     } else {
-      res.setHeader('Cache-Control', 'public, max-age=604800, immutable'); // 7 days
+      res.setHeader('Cache-Control', 'public, max-age=604800, immutable'); // 7 days for other static assets
     }
   },
 }));
@@ -147,6 +150,10 @@ mongoose
   .connect(process.env.MONGO_URI)
   .then(() => console.log("MongoDB Connected"))
   .catch((err) => {
-    console.error("MongoDB connection failed:", err);
-    process.exit(1); // Let Render restart the service
+    console.error("⚠️  MongoDB connection failed:", err.message);
+    if (process.env.NODE_ENV === "production") {
+      process.exit(1); // Let Render restart in production
+    }
+    // In development: keep the server running so static files / UI still work
+    console.warn("⚠️  Running WITHOUT database — API routes will fail, but the UI is accessible.");
   });

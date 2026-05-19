@@ -4,6 +4,7 @@
   "description": "SnapBook - MERN Stack Ecommerce Project",
   "scripts": {
     "start": "cd backend && node server.js",
+    "build": "cd frontend && npm install && npm run build",
     "dev:backend": "cd backend && npx nodemon server.js",
     "dev:frontend": "cd frontend && npx serve public -l 3000",
     "install:backend": "cd backend && npm install",
