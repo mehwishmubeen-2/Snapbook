@@ -1,0 +1,13 @@
+{
+  "name": "ecommerceproject-frontend",
+  "version": "1.0.0",
+  "description": "Frontend for SnapBook ecommerce project",
+  "scripts": {
+    "start": "node dev-server.js",
+    "dev": "node dev-server.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {}
+}

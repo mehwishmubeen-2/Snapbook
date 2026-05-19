@@ -1,0 +1,754 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Become a Photographer on SnapBook — Sell Your Skills</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Caveat:wght@400;600;700&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/theme.css" />
+  <link rel="stylesheet" href="/styles.css" />
+  <script src="/navbar.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: var(--font-body);
+      background: var(--color-bg);
+      color: var(--color-border-dark);
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+
+    /* ── Hero ── */
+    .fp-hero {
+      min-height: 92vh;
+      background: linear-gradient(145deg, #2c1810 0%, #4e2a10 40%, #7c3a18 70%, #9c5030 100%);
+      position: relative; overflow: hidden;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .fp-hero-bg-pattern {
+      position: absolute; inset: 0;
+      background-image:
+        repeating-linear-gradient(transparent 0px, transparent 40px, rgba(255,255,255,0.025) 40px, rgba(255,255,255,0.025) 41px),
+        repeating-linear-gradient(90deg, transparent 0px, transparent 40px, rgba(255,255,255,0.025) 40px, rgba(255,255,255,0.025) 41px);
+      pointer-events: none;
+    }
+    .fp-hero-glow {
+      position: absolute; width: 600px; height: 600px; border-radius: 50%;
+      background: radial-gradient(circle, rgba(216,67,21,0.22) 0%, transparent 70%);
+      top: 50%; left: 50%; transform: translate(-50%, -50%);
+      pointer-events: none;
+    }
+    /* Floating polaroid accents */
+    .fp-hero-floats { position: absolute; inset: 0; pointer-events: none; }
+    .fp-float {
+      position: absolute;
+      background: #FDFBF7; border: 2px solid rgba(255,255,255,0.5);
+      border-radius: 4px; box-shadow: 6px 6px 18px rgba(0,0,0,0.35);
+      overflow: hidden;
+    }
+    .fp-float-1 { width: 130px; top: 12%; left: 4%; transform: rotate(-8deg); }
+    .fp-float-2 { width: 110px; top: 55%; left: 7%; transform: rotate(5deg); }
+    .fp-float-3 { width: 120px; top: 10%; right: 5%; transform: rotate(7deg); }
+    .fp-float-4 { width: 105px; top: 58%; right: 6%; transform: rotate(-6deg); }
+    .fp-float img { width: 100%; aspect-ratio: 1; object-fit: cover; display: block; }
+    .fp-float-cap { padding: 6px 8px 9px; text-align: center; font-family: 'Caveat', cursive; font-size: 12px; color: #5D4037; font-weight: 600; }
+
+    .fp-hero-content { position: relative; z-index: 2; text-align: center; max-width: 780px; padding: 40px 20px; }
+    .fp-hero-badge {
+      display: inline-flex; align-items: center; gap: 7px;
+      background: rgba(216,67,21,0.2); border: 1.5px solid rgba(216,67,21,0.5);
+      border-radius: 999px; padding: 6px 16px; margin-bottom: 28px;
+      font-size: 12px; font-weight: 700; color: #ffb59a; letter-spacing: 0.06em; text-transform: uppercase;
+    }
+    .fp-hero-h1 {
+      font-family: var(--font-heading); font-size: 64px; line-height: 1.05;
+      color: var(--color-surface); margin-bottom: 22px; letter-spacing: -0.02em;
+    }
+    .fp-hero-h1 em { font-style: italic; color: #ff8a65; }
+    .fp-hero-sub {
+      font-size: 18px; color: rgba(255,255,255,0.72); line-height: 1.7;
+      max-width: 560px; margin: 0 auto 38px;
+    }
+    .fp-hero-actions { display: flex; align-items: center; justify-content: center; gap: 14px; flex-wrap: wrap; }
+    .fp-hero-btn-primary {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: #D84315; color: #FDFBF7; text-decoration: none;
+      font-size: 16px; font-weight: 700; padding: 15px 36px;
+      border: 2px solid #FDFBF7;
+      border-radius: 255px 15px 225px 15px / 15px 225px 15px 255px;
+      box-shadow: 5px 5px 0 rgba(0,0,0,0.3); transition: transform 0.12s, box-shadow 0.12s;
+    }
+    .fp-hero-btn-primary:hover { transform: translate(-2px,-2px); box-shadow: 7px 7px 0 rgba(0,0,0,0.3); }
+    .fp-hero-btn-ghost {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: transparent; color: rgba(255,255,255,0.82); text-decoration: none;
+      font-size: 15px; font-weight: 600; padding: 14px 28px;
+      border: 2px solid rgba(255,255,255,0.3); border-radius: 999px;
+      transition: border-color 0.15s, color 0.15s;
+    }
+    .fp-hero-btn-ghost:hover { border-color: rgba(255,255,255,0.7); color: #fff; }
+    .fp-hero-stats {
+      display: flex; justify-content: center; gap: 40px; flex-wrap: wrap;
+      margin-top: 52px; padding-top: 40px;
+      border-top: 1px solid rgba(255,255,255,0.12);
+    }
+    .fp-hero-stat-num {
+      font-family: var(--font-hand); font-size: 38px; font-weight: 700; color: #ff8a65; line-height: 1;
+    }
+    .fp-hero-stat-lbl { font-size: 12px; color: rgba(255,255,255,0.5); margin-top: 4px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em; }
+
+    /* ── Section wrapper ── */
+    .fp-section { padding: 88px 40px; max-width: 1160px; margin: 0 auto; }
+    .fp-section-center { text-align: center; }
+    .fp-eyebrow {
+      font-size: 11px; font-weight: 800; letter-spacing: 0.1em;
+      text-transform: uppercase; color: #D84315; margin-bottom: 12px;
+    }
+    .fp-h2 {
+      font-family: 'DM Serif Display', serif; font-size: 44px; color: #3E2723;
+      line-height: 1.12; letter-spacing: -0.01em; margin-bottom: 16px;
+    }
+    .fp-h2 em { font-style: italic; color: #D84315; }
+    .fp-lead { font-size: 17px; color: #6D4C41; line-height: 1.75; max-width: 580px; margin: 0 auto; }
+
+    /* ── Features grid ── */
+    .fp-features-grid {
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; margin-top: 56px;
+    }
+    .fp-feat-card {
+      background: #FDFBF7; border: 2px solid #3E2723;
+      border-radius: 18px 22px 16px 20px; box-shadow: 5px 5px 0 #3E2723;
+      padding: 30px 26px; transition: transform 0.15s, box-shadow 0.15s;
+      position: relative; overflow: hidden;
+    }
+    .fp-feat-card:hover { transform: translate(-2px,-2px); box-shadow: 7px 7px 0 #3E2723; }
+    .fp-feat-card::before {
+      content: '';
+      position: absolute; top: 0; right: 0;
+      width: 80px; height: 80px;
+      background: radial-gradient(circle at top right, rgba(216,67,21,0.07) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .fp-feat-icon {
+      width: 52px; height: 52px; border-radius: 12px;
+      background: linear-gradient(135deg, #D84315, #c07c1a);
+      border: 2px solid #3E2723; box-shadow: 3px 3px 0 #3E2723;
+      display: flex; align-items: center; justify-content: center;
+      margin-bottom: 18px;
+    }
+    .fp-feat-icon svg { width: 24px; height: 24px; }
+    .fp-feat-title { font-family: 'DM Serif Display', serif; font-size: 20px; color: #3E2723; margin-bottom: 10px; }
+    .fp-feat-desc { font-size: 14px; color: #6D4C41; line-height: 1.7; }
+
+    /* ── Earnings calculator ── */
+    .fp-calc-section {
+      background: #3E2723; padding: 80px 40px; overflow: hidden; position: relative;
+    }
+    .fp-calc-section::before {
+      content: '';
+      position: absolute; inset: 0;
+      background-image: repeating-linear-gradient(transparent 0px, transparent 35px, rgba(255,255,255,0.03) 35px, rgba(255,255,255,0.03) 36px);
+      pointer-events: none;
+    }
+    .fp-calc-inner {
+      max-width: 1160px; margin: 0 auto;
+      display: grid; grid-template-columns: 1fr 1fr; gap: 60px; align-items: center;
+    }
+    .fp-calc-text .fp-h2 { color: #FDFBF7; }
+    .fp-calc-text .fp-lead { color: rgba(255,255,255,0.65); }
+    .fp-calc-text .fp-eyebrow { color: #ff8a65; }
+    .fp-calc-card {
+      background: #FDFBF7; border: 2px solid rgba(255,255,255,0.3);
+      border-radius: 18px 22px 16px 20px; box-shadow: 8px 8px 0 rgba(0,0,0,0.25);
+      padding: 32px;
+    }
+    .fp-calc-title { font-family: 'DM Serif Display', serif; font-size: 20px; color: #3E2723; margin-bottom: 22px; }
+    .fp-calc-row { display: flex; flex-direction: column; gap: 4px; margin-bottom: 18px; }
+    .fp-calc-label { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: #795548; }
+    .fp-calc-slider {
+      -webkit-appearance: none; appearance: none;
+      width: 100%; height: 6px; border-radius: 3px;
+      background: #f3e8d8; border: 1.5px solid rgba(62,39,35,0.2); outline: none;
+      cursor: pointer;
+    }
+    .fp-calc-slider::-webkit-slider-thumb {
+      -webkit-appearance: none; appearance: none;
+      width: 20px; height: 20px; border-radius: 50%;
+      background: #D84315; border: 2.5px solid #3E2723;
+      box-shadow: 2px 2px 0 #3E2723; cursor: pointer;
+    }
+    .fp-calc-val { font-family: 'Caveat', cursive; font-size: 20px; font-weight: 700; color: #3E2723; margin-top: 6px; }
+    .fp-calc-divider { border: none; border-top: 2px dashed rgba(62,39,35,0.14); margin: 18px 0; }
+    .fp-calc-result-lbl { font-size: 12px; color: #795548; font-weight: 600; margin-bottom: 5px; }
+    .fp-calc-result-num { font-family: 'Caveat', cursive; font-size: 44px; font-weight: 700; color: #D84315; line-height: 1; }
+    .fp-calc-result-sub { font-size: 12px; color: #8a6552; margin-top: 5px; }
+    .fp-calc-note { font-size: 11px; color: #a08070; margin-top: 12px; font-style: italic; }
+
+    /* ── How it works ── */
+    .fp-how-strip { background: #f3e8d8; padding: 80px 40px; }
+    .fp-how-inner { max-width: 1160px; margin: 0 auto; }
+    .fp-steps {
+      display: grid; grid-template-columns: repeat(4, 1fr); gap: 0; margin-top: 52px; position: relative;
+    }
+    .fp-steps::before {
+      content: '';
+      position: absolute; top: 36px; left: 10%; right: 10%; height: 2px;
+      border-top: 2.5px dashed rgba(62,39,35,0.2); pointer-events: none;
+      z-index: 0;
+    }
+    .fp-step { text-align: center; padding: 0 16px; position: relative; z-index: 1; }
+    .fp-step-num {
+      width: 72px; height: 72px; border-radius: 50%;
+      background: #FDFBF7; border: 3px solid #3E2723;
+      box-shadow: 4px 4px 0 #3E2723;
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'Caveat', cursive; font-size: 30px; font-weight: 700; color: #D84315;
+      margin: 0 auto 18px;
+    }
+    .fp-step-title { font-family: 'DM Serif Display', serif; font-size: 17px; color: #3E2723; margin-bottom: 8px; }
+    .fp-step-desc { font-size: 13px; color: #6D4C41; line-height: 1.65; }
+
+    /* ── Testimonials ── */
+    .fp-testimonials-grid {
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 22px; margin-top: 52px;
+    }
+    .fp-testi-card {
+      background: #FDFBF7; border: 2px solid #3E2723;
+      border-radius: 16px 20px 14px 18px; box-shadow: 4px 4px 0 #3E2723;
+      padding: 26px; display: flex; flex-direction: column; gap: 14px;
+    }
+    .fp-testi-stars { color: #D84315; font-size: 16px; letter-spacing: 1px; }
+    .fp-testi-text { font-size: 14px; color: #5D4037; line-height: 1.7; font-style: italic; flex: 1; }
+    .fp-testi-author { display: flex; align-items: center; gap: 11px; }
+    .fp-testi-av {
+      width: 44px; height: 44px; border-radius: 50%;
+      border: 2px solid #3E2723; flex-shrink: 0;
+      background: linear-gradient(135deg, #D84315, #c07c1a);
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'Caveat', cursive; font-size: 20px; font-weight: 700; color: #FDFBF7;
+    }
+    .fp-testi-name { font-size: 14px; font-weight: 700; color: #3E2723; }
+    .fp-testi-city { font-size: 12px; color: #8a6552; margin-top: 1px; }
+    .fp-testi-earning {
+      background: rgba(216,67,21,0.08); border: 1.5px solid rgba(216,67,21,0.2);
+      border-radius: 8px; padding: 6px 12px; display: inline-block;
+      font-family: 'Caveat', cursive; font-size: 16px; font-weight: 700; color: #D84315;
+    }
+
+    /* ── FAQ ── */
+    .fp-faq-list { max-width: 760px; margin: 48px auto 0; display: flex; flex-direction: column; gap: 12px; }
+    .fp-faq-item {
+      background: #FDFBF7; border: 2px solid rgba(62,39,35,0.18);
+      border-radius: 12px 16px 10px 14px; overflow: hidden;
+    }
+    .fp-faq-q {
+      display: flex; align-items: center; justify-content: space-between; gap: 12px;
+      padding: 17px 20px; cursor: pointer; user-select: none;
+      font-size: 15px; font-weight: 600; color: #3E2723;
+      transition: background 0.12s;
+    }
+    .fp-faq-q:hover { background: rgba(62,39,35,0.03); }
+    .fp-faq-arrow { font-size: 18px; transition: transform 0.2s; flex-shrink: 0; color: #D84315; }
+    .fp-faq-item.open .fp-faq-arrow { transform: rotate(180deg); }
+    .fp-faq-a {
+      display: none; padding: 0 20px 17px;
+      font-size: 14px; color: #6D4C41; line-height: 1.72;
+      border-top: 1px dashed rgba(62,39,35,0.12);
+    }
+    .fp-faq-item.open .fp-faq-a { display: block; }
+
+    /* ── Final CTA banner ── */
+    .fp-cta-banner {
+      background: linear-gradient(135deg, #2c1810 0%, #7c3a18 50%, #D84315 100%);
+      padding: 88px 40px; text-align: center; position: relative; overflow: hidden;
+    }
+    .fp-cta-banner::before {
+      content: '';
+      position: absolute; inset: 0;
+      background-image: repeating-linear-gradient(transparent 0px, transparent 38px, rgba(255,255,255,0.03) 38px, rgba(255,255,255,0.03) 39px);
+      pointer-events: none;
+    }
+    .fp-cta-inner { position: relative; z-index: 1; max-width: 680px; margin: 0 auto; }
+    .fp-cta-h2 {
+      font-family: 'DM Serif Display', serif; font-size: 50px; color: #FDFBF7;
+      line-height: 1.1; margin-bottom: 16px;
+    }
+    .fp-cta-h2 em { font-style: italic; color: #ff8a65; }
+    .fp-cta-sub { font-size: 17px; color: rgba(255,255,255,0.72); margin-bottom: 36px; line-height: 1.65; }
+    .fp-cta-btn {
+      display: inline-flex; align-items: center; gap: 9px;
+      background: #FDFBF7; color: #3E2723; text-decoration: none;
+      font-size: 17px; font-weight: 800; padding: 17px 42px;
+      border: 2px solid #FDFBF7;
+      border-radius: 255px 15px 225px 15px / 15px 225px 15px 255px;
+      box-shadow: 5px 5px 0 rgba(0,0,0,0.3);
+      transition: transform 0.12s, box-shadow 0.12s;
+    }
+    .fp-cta-btn:hover { transform: translate(-2px,-2px); box-shadow: 7px 7px 0 rgba(0,0,0,0.3); }
+    .fp-cta-already {
+      margin-top: 20px; font-size: 13px; color: rgba(255,255,255,0.5);
+    }
+    .fp-cta-already a { color: rgba(255,255,255,0.75); text-decoration: underline; }
+
+    /* ── Footer ── */
+    .fp-footer {
+      background: #2c1810; padding: 32px 40px; text-align: center;
+      font-size: 12px; color: rgba(255,255,255,0.3); border-top: 2px solid #3E2723;
+    }
+    .fp-footer a { color: rgba(255,255,255,0.4); text-decoration: none; margin: 0 10px; }
+    .fp-footer a:hover { color: rgba(255,255,255,0.7); }
+
+    /* ── Responsive ── */
+    @media (max-width: 1024px) {
+      .fp-features-grid   { grid-template-columns: repeat(2, 1fr); }
+      .fp-calc-inner      { grid-template-columns: 1fr; gap: 40px; }
+      .fp-steps           { grid-template-columns: repeat(2, 1fr); gap: 30px; }
+      .fp-steps::before   { display: none; }
+      .fp-testimonials-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (max-width: 680px) {
+      .fp-hero-h1 { font-size: 38px; }
+      .fp-hero-sub { font-size: 15px; }
+      .fp-hero-floats { display: none; }
+      .fp-section { padding: 60px 20px; }
+      .fp-h2 { font-size: 32px; }
+      .fp-features-grid   { grid-template-columns: 1fr; }
+      .fp-steps           { grid-template-columns: 1fr; }
+      .fp-testimonials-grid { grid-template-columns: 1fr; }
+      .fp-cta-h2 { font-size: 34px; }
+      .fp-calc-section    { padding: 60px 20px; }
+      .fp-how-strip       { padding: 60px 20px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ── Hero ── -->
+  <section class="fp-hero">
+    <div class="fp-hero-bg-pattern"></div>
+    <div class="fp-hero-glow"></div>
+
+    <!-- Floating polaroids -->
+    <div class="fp-hero-floats">
+      <div class="fp-float fp-float-1">
+        <img src="https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=200&q=70" alt="Wedding" />
+        <div class="fp-float-cap">Wedding ✦</div>
+      </div>
+      <div class="fp-float fp-float-2">
+        <img src="https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?auto=format&fit=crop&w=200&q=70" alt="Portrait" />
+        <div class="fp-float-cap">Portrait ✦</div>
+      </div>
+      <div class="fp-float fp-float-3">
+        <img src="https://images.unsplash.com/photo-1542744173-8e7e53415bb0?auto=format&fit=crop&w=200&q=70" alt="Corporate" />
+        <div class="fp-float-cap">Corporate ✦</div>
+      </div>
+      <div class="fp-float fp-float-4">
+        <img src="https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?auto=format&fit=crop&w=200&q=70" alt="Events" />
+        <div class="fp-float-cap">Events ✦</div>
+      </div>
+    </div>
+
+    <div class="fp-hero-content">
+      <div class="fp-hero-badge">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:13px;height:13px"><path d="M12 2L9.5 7H14L4 14l2.5-5H2L12 2z"/></svg>
+        Join 500+ photographers already earning on SnapBook
+      </div>
+      <h1 class="fp-hero-h1">
+        Turn Your Lens<br>Into a <em>Business</em>
+      </h1>
+      <p class="fp-hero-sub">
+        SnapBook is Pakistan's fastest-growing photography marketplace. Create your profile, showcase your portfolio, and start getting paid bookings — completely free.
+      </p>
+      <div class="fp-hero-actions">
+        <a href="/register.html?role=photographer" class="fp-hero-btn-primary">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="width:17px;height:17px"><path d="M10 2C6.13 2 3 5.13 3 9s3.13 7 7 7 7-3.13 7-7-3.13-7-7-7z"/><path d="M10 6v4l3 2"/></svg>
+          Start Selling — It's Free
+        </a>
+        <a href="#how-it-works" class="fp-hero-btn-ghost">
+          See how it works
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:13px;height:13px"><path d="M8 3v10M4 9l4 4 4-4"/></svg>
+        </a>
+      </div>
+      <div class="fp-hero-stats">
+        <div>
+          <div class="fp-hero-stat-num">PKR 0</div>
+          <div class="fp-hero-stat-lbl">Registration Fee</div>
+        </div>
+        <div>
+          <div class="fp-hero-stat-num">5,000+</div>
+          <div class="fp-hero-stat-lbl">Monthly Customers</div>
+        </div>
+        <div>
+          <div class="fp-hero-stat-num">90%</div>
+          <div class="fp-hero-stat-lbl">You Keep Per Booking</div>
+        </div>
+        <div>
+          <div class="fp-hero-stat-num">24h</div>
+          <div class="fp-hero-stat-lbl">Setup Time</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Features ── -->
+  <section class="fp-section fp-section-center">
+    <div class="fp-eyebrow">Why SnapBook?</div>
+    <h2 class="fp-h2">Everything you need to<br>grow your <em>photography business</em></h2>
+    <p class="fp-lead">One powerful platform — from portfolio to payment. No tech skills needed.</p>
+
+    <div class="fp-features-grid">
+
+      <div class="fp-feat-card">
+        <div class="fp-feat-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+        </div>
+        <h3 class="fp-feat-title">Stunning Portfolio Page</h3>
+        <p class="fp-feat-desc">Get a beautiful, public-facing profile page with your photos, packages, reviews, and availability calendar. Customers find and book you directly.</p>
+      </div>
+
+      <div class="fp-feat-card">
+        <div class="fp-feat-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
+        </div>
+        <h3 class="fp-feat-title">Get Paid Instantly</h3>
+        <p class="fp-feat-desc">Customers pay through the platform and you receive 90% of every booking. No chasing invoices, no delayed payments — funds released on completion.</p>
+      </div>
+
+      <div class="fp-feat-card">
+        <div class="fp-feat-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        </div>
+        <h3 class="fp-feat-title">Smart Booking Calendar</h3>
+        <p class="fp-feat-desc">Set your working days, block off dates, and define your working hours. Customers only see and book you when you're actually available.</p>
+      </div>
+
+      <div class="fp-feat-card">
+        <div class="fp-feat-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 002 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/></svg>
+        </div>
+        <h3 class="fp-feat-title">Flexible Packages</h3>
+        <p class="fp-feat-desc">Offer Basic, Standard, and Premium packages with custom pricing, durations, and features. Upsell with ease and serve every type of client.</p>
+      </div>
+
+      <div class="fp-feat-card">
+        <div class="fp-feat-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
+        </div>
+        <h3 class="fp-feat-title">Real Customer Reviews</h3>
+        <p class="fp-feat-desc">Every completed booking can earn you a verified review. Build social proof that drives more bookings — your reputation grows with every shoot.</p>
+      </div>
+
+      <div class="fp-feat-card">
+        <div class="fp-feat-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+        </div>
+        <h3 class="fp-feat-title">Analytics Dashboard</h3>
+        <p class="fp-feat-desc">Track your total earnings, bookings count, profile views, and top-performing packages. Data that helps you grow your photography income strategically.</p>
+      </div>
+
+      <div class="fp-feat-card">
+        <div class="fp-feat-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
+        </div>
+        <h3 class="fp-feat-title">Dispute Protection</h3>
+        <p class="fp-feat-desc">Our dispute resolution system protects you from unfair cancellations. You're covered — every booking comes with clear terms enforced by the platform.</p>
+      </div>
+
+      <div class="fp-feat-card">
+        <div class="fp-feat-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+        </div>
+        <h3 class="fp-feat-title">AI Chatbot Promotion</h3>
+        <p class="fp-feat-desc">Our built-in AI chatbot recommends photographers to customers 24/7. Your profile is actively promoted in every relevant customer conversation.</p>
+      </div>
+
+      <div class="fp-feat-card">
+        <div class="fp-feat-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"/></svg>
+        </div>
+        <h3 class="fp-feat-title">Verified Badge</h3>
+        <p class="fp-feat-desc">Get verified by SnapBook and stand out in search results. The verified badge builds instant trust with customers and increases your booking rate significantly.</p>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ── Earnings Calculator ── -->
+  <div class="fp-calc-section">
+    <div class="fp-calc-inner">
+      <div class="fp-calc-text">
+        <div class="fp-eyebrow">Earnings Calculator</div>
+        <h2 class="fp-h2" style="color:#FDFBF7">See how much you<br>could <em>earn</em> with SnapBook</h2>
+        <p class="fp-lead" style="color:rgba(255,255,255,0.65);margin-top:14px">
+          Most photographers on SnapBook earn between PKR 30,000 – PKR 200,000 per month, depending on their city, specialization, and how many bookings they take.
+        </p>
+        <ul style="margin-top:24px;display:flex;flex-direction:column;gap:10px;list-style:none;">
+          <li style="display:flex;align-items:center;gap:10px;font-size:14px;color:rgba(255,255,255,0.72);">
+            <span style="color:#ff8a65;font-weight:700;font-size:17px;">✓</span> 90% of every booking goes to you
+          </li>
+          <li style="display:flex;align-items:center;gap:10px;font-size:14px;color:rgba(255,255,255,0.72);">
+            <span style="color:#ff8a65;font-weight:700;font-size:17px;">✓</span> Set your own rates — no minimums
+          </li>
+          <li style="display:flex;align-items:center;gap:10px;font-size:14px;color:rgba(255,255,255,0.72);">
+            <span style="color:#ff8a65;font-weight:700;font-size:17px;">✓</span> Work as many or as few days as you want
+          </li>
+          <li style="display:flex;align-items:center;gap:10px;font-size:14px;color:rgba(255,255,255,0.72);">
+            <span style="color:#ff8a65;font-weight:700;font-size:17px;">✓</span> Bonuses for high-rated photographers
+          </li>
+        </ul>
+      </div>
+
+      <div class="fp-calc-card">
+        <div class="fp-calc-title">Estimate Your Monthly Income</div>
+
+        <div class="fp-calc-row">
+          <label class="fp-calc-label">Bookings per month</label>
+          <input type="range" class="fp-calc-slider" id="calc-bookings" min="1" max="30" value="8" />
+          <div class="fp-calc-val" id="calc-bookings-val">8 bookings</div>
+        </div>
+
+        <div class="fp-calc-row">
+          <label class="fp-calc-label">Your hourly rate (PKR)</label>
+          <input type="range" class="fp-calc-slider" id="calc-rate" min="3000" max="30000" step="500" value="8000" />
+          <div class="fp-calc-val" id="calc-rate-val">PKR 8,000/hr</div>
+        </div>
+
+        <div class="fp-calc-row">
+          <label class="fp-calc-label">Average hours per booking</label>
+          <input type="range" class="fp-calc-slider" id="calc-hours" min="2" max="10" value="5" />
+          <div class="fp-calc-val" id="calc-hours-val">5 hours</div>
+        </div>
+
+        <hr class="fp-calc-divider" />
+
+        <div class="fp-calc-result-lbl">Your estimated monthly earnings</div>
+        <div class="fp-calc-result-num" id="calc-result">PKR 288,000</div>
+        <div class="fp-calc-result-sub">After SnapBook's 10% platform fee</div>
+        <div class="fp-calc-note">* Estimate only. Actual earnings depend on demand in your city and your ratings.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── How it works ── -->
+  <div class="fp-how-strip" id="how-it-works">
+    <div class="fp-how-inner fp-section-center">
+      <div class="fp-eyebrow">Simple Process</div>
+      <h2 class="fp-h2">From sign-up to first booking<br>in <em>4 easy steps</em></h2>
+
+      <div class="fp-steps">
+        <div class="fp-step">
+          <div class="fp-step-num">1</div>
+          <h4 class="fp-step-title">Create Your Account</h4>
+          <p class="fp-step-desc">Sign up free in 2 minutes. Choose "Photographer" as your role and verify your email.</p>
+        </div>
+        <div class="fp-step">
+          <div class="fp-step-num">2</div>
+          <h4 class="fp-step-title">Build Your Profile</h4>
+          <p class="fp-step-desc">Upload your best photos, write your bio, set your city, specialization, and hourly rate.</p>
+        </div>
+        <div class="fp-step">
+          <div class="fp-step-num">3</div>
+          <h4 class="fp-step-title">Set Your Availability</h4>
+          <p class="fp-step-desc">Mark your working days, define working hours, and block off any dates you're unavailable.</p>
+        </div>
+        <div class="fp-step">
+          <div class="fp-step-num">4</div>
+          <h4 class="fp-step-title">Start Earning</h4>
+          <p class="fp-step-desc">Customers discover you, add you to cart, and book. You confirm and get paid. That simple.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Testimonials ── -->
+  <section class="fp-section fp-section-center">
+    <div class="fp-eyebrow">Photographer Stories</div>
+    <h2 class="fp-h2">Real photographers,<br><em>real results</em></h2>
+    <p class="fp-lead">Hear from photographers who've grown their businesses on SnapBook.</p>
+
+    <div class="fp-testimonials-grid">
+
+      <div class="fp-testi-card">
+        <div class="fp-testi-stars">★★★★★</div>
+        <p class="fp-testi-text">"Before SnapBook I was struggling to find clients on Instagram. Within my first month on the platform I had 6 bookings. The profile page is so professional — clients trust it immediately."</p>
+        <div class="fp-testi-earning">Earned PKR 94,000 in month 1</div>
+        <div class="fp-testi-author">
+          <div class="fp-testi-av">A</div>
+          <div>
+            <div class="fp-testi-name">Ahmed Raza</div>
+            <div class="fp-testi-city">Wedding Photographer · Lahore</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="fp-testi-card">
+        <div class="fp-testi-stars">★★★★★</div>
+        <p class="fp-testi-text">"The booking calendar feature alone is worth it. I used to manage everything on WhatsApp and miss bookings. Now my schedule is crystal clear and I never double-book."</p>
+        <div class="fp-testi-earning">4.9 ★ rating · 47 reviews</div>
+        <div class="fp-testi-author">
+          <div class="fp-testi-av" style="background:linear-gradient(135deg,#3a6ea8,#1a3e6e)">S</div>
+          <div>
+            <div class="fp-testi-name">Sara Malik</div>
+            <div class="fp-testi-city">Portrait Photographer · Karachi</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="fp-testi-card">
+        <div class="fp-testi-stars">★★★★★</div>
+        <p class="fp-testi-text">"I love that I can offer different packages. Corporate clients choose Premium and it automatically increases my average booking value. SnapBook has really thought this through."</p>
+        <div class="fp-testi-earning">Avg. PKR 45,000 per booking</div>
+        <div class="fp-testi-author">
+          <div class="fp-testi-av" style="background:linear-gradient(135deg,#4a7c59,#1e4a30)">U</div>
+          <div>
+            <div class="fp-testi-name">Usman Tariq</div>
+            <div class="fp-testi-city">Corporate Photographer · Islamabad</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ── FAQ ── -->
+  <section class="fp-section fp-section-center" style="padding-top:0">
+    <div class="fp-eyebrow">FAQ</div>
+    <h2 class="fp-h2">Common <em>questions</em></h2>
+
+    <div class="fp-faq-list">
+
+      <div class="fp-faq-item">
+        <div class="fp-faq-q">
+          Is it really free to join SnapBook as a photographer?
+          <span class="fp-faq-arrow">▾</span>
+        </div>
+        <div class="fp-faq-a">
+          Yes — completely free. There is no registration fee, no monthly subscription, and no hidden charges. SnapBook only earns when you earn: we take a 10% platform fee from each completed booking. Everything else goes to you.
+        </div>
+      </div>
+
+      <div class="fp-faq-item">
+        <div class="fp-faq-q">
+          How does payment work?
+          <span class="fp-faq-arrow">▾</span>
+        </div>
+        <div class="fp-faq-a">
+          Customers pay upfront when they place a booking. The payment is held securely by SnapBook and released to your account once the booking is marked as completed. You receive 90% of the total booking amount.
+        </div>
+      </div>
+
+      <div class="fp-faq-item">
+        <div class="fp-faq-q">
+          Can I set my own rates and packages?
+          <span class="fp-faq-arrow">▾</span>
+        </div>
+        <div class="fp-faq-a">
+          Absolutely. You control your hourly rate and can create up to three packages (Basic, Standard, Premium) each with custom prices, durations, and included features. You can update them any time from your dashboard.
+        </div>
+      </div>
+
+      <div class="fp-faq-item">
+        <div class="fp-faq-q">
+          What if a customer cancels last-minute?
+          <span class="fp-faq-arrow">▾</span>
+        </div>
+        <div class="fp-faq-a">
+          SnapBook has a built-in dispute resolution system. Late cancellations are governed by our cancellation policy and you are protected. You can also open a dispute if you believe a cancellation was unfair — our admin team reviews every case.
+        </div>
+      </div>
+
+      <div class="fp-faq-item">
+        <div class="fp-faq-q">
+          Do I need professional equipment to join?
+          <span class="fp-faq-arrow">▾</span>
+        </div>
+        <div class="fp-faq-a">
+          There is no equipment requirement to sign up. However, photographers who upload high-quality portfolio images and maintain strong reviews naturally attract more bookings. We recommend showcasing your best work from the start.
+        </div>
+      </div>
+
+      <div class="fp-faq-item">
+        <div class="fp-faq-q">
+          How long does profile approval take?
+          <span class="fp-faq-arrow">▾</span>
+        </div>
+        <div class="fp-faq-a">
+          Once you submit your profile, our admin team reviews it within 24 hours. You'll get a notification once you're approved and your profile goes live on the platform for customers to discover.
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ── Final CTA ── -->
+  <div class="fp-cta-banner">
+    <div class="fp-cta-inner">
+      <h2 class="fp-cta-h2">Your next client is<br>already on <em>SnapBook</em></h2>
+      <p class="fp-cta-sub">
+        Thousands of customers are searching for photographers right now. Set up your profile in minutes and start receiving bookings today — for free.
+      </p>
+      <a href="/register.html?role=photographer" class="fp-cta-btn">
+        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px"><path d="M10 2C6.13 2 3 5.13 3 9s3.13 7 7 7 7-3.13 7-7-3.13-7-7-7z"/><path d="M10 6v4l3 2"/></svg>
+        Create Your Free Profile
+      </a>
+      <div class="fp-cta-already">Already have an account? <a href="/login.html">Log in</a> · <a href="/photographer-dashboard.html">Go to Dashboard</a></div>
+    </div>
+  </div>
+
+  <!-- ── Footer ── -->
+  <div class="fp-footer">
+    <div style="margin-bottom:10px">
+      <a href="/">Home</a>
+      <a href="/register.html">Sign Up</a>
+      <a href="/login.html">Login</a>
+      <a href="/photographer-dashboard.html">Dashboard</a>
+    </div>
+    &copy; 2024 SnapBook. All rights reserved.
+  </div>
+
+  <!-- ── Earnings calculator JS ── -->
+  <script>
+    (function () {
+      const bookingsSlider = document.getElementById('calc-bookings');
+      const rateSlider     = document.getElementById('calc-rate');
+      const hoursSlider    = document.getElementById('calc-hours');
+      const bookingsVal    = document.getElementById('calc-bookings-val');
+      const rateVal        = document.getElementById('calc-rate-val');
+      const hoursVal       = document.getElementById('calc-hours-val');
+      const resultEl       = document.getElementById('calc-result');
+
+      function update() {
+        const b = parseInt(bookingsSlider.value);
+        const r = parseInt(rateSlider.value);
+        const h = parseInt(hoursSlider.value);
+        bookingsVal.textContent = b + ' booking' + (b !== 1 ? 's' : '');
+        rateVal.textContent     = 'PKR ' + r.toLocaleString('en-PK') + '/hr';
+        hoursVal.textContent    = h + ' hour' + (h !== 1 ? 's' : '');
+        const gross  = b * r * h;
+        const net    = Math.round(gross * 0.9);
+        resultEl.textContent = 'PKR ' + net.toLocaleString('en-PK');
+      }
+
+      bookingsSlider.addEventListener('input', update);
+      rateSlider.addEventListener('input', update);
+      hoursSlider.addEventListener('input', update);
+      update();
+
+      // ── FAQ accordion ──
+      document.querySelectorAll('.fp-faq-q').forEach(q => {
+        q.addEventListener('click', () => {
+          const item = q.closest('.fp-faq-item');
+          const isOpen = item.classList.contains('open');
+          document.querySelectorAll('.fp-faq-item.open').forEach(x => x.classList.remove('open'));
+          if (!isOpen) item.classList.add('open');
+        });
+      });
+    })();
+  </script>
+
+  <script src="/chatbot.js"></script>
+</body>
+</html>

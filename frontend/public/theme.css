@@ -1,0 +1,112 @@
+/* ================================================================
+ * SNAPBOOK — CREATIVE SKETCHBOOK THEME
+ * Global Design Token System — Single Source of Truth
+ *
+ * Palette:
+ *   Primary   → Warm Chestnut Brown   #7c4a1e
+ *   Secondary → Golden Amber          #c07c1a
+ *   Accent    → Terracotta            #b85c3a
+ *   Base BG   → Cream Parchment       #faf3e8
+ *
+ * Typography:
+ *   Headings  → DM Serif Display  (Google Fonts — elegant serif)
+ *   Accents   → Caveat             (Google Fonts — handwritten)
+ *   Body      → DM Sans            (Google Fonts — clean sans-serif)
+ *
+ * Aesthetic: Warm, organic, hand-drawn sketchbook feel.
+ *   Cards use hard offset shadows to simulate sketch panels.
+ *   Borders are warm-toned. Radii are irregular/organic.
+ *
+ * Usage:
+ *   Link this file BEFORE styles.css in every HTML page.
+ *   Changing a value here propagates across the entire app.
+ * ================================================================ */
+
+:root {
+  color-scheme: light;
+
+  /* ===========================
+     1. BACKGROUNDS
+     =========================== */
+  --bg:              #faf3e8;   /* cream parchment page background    */
+  --surface:         #fffcf5;   /* card / panel — pale warm white     */
+  --surface-soft:    #f3e8d8;   /* input fills, chips, tag areas      */
+  --surface-raised:  #e8d5be;   /* hover states, elevated elements    */
+
+  /* ===========================
+     2. BRAND — PRIMARY
+     Warm Chestnut Brown
+     =========================== */
+  --primary:         #7c4a1e;
+  --primary-dark:    #5a3212;
+  --primary-soft:    rgba(124, 74, 30, 0.10);
+  --primary-glow:    rgba(124, 74, 30, 0.22);
+
+  /* ===========================
+     2b. BRAND — SECONDARY
+     Golden Amber
+     =========================== */
+  --secondary:       #c07c1a;
+  --secondary-dark:  #9a5e0f;
+  --secondary-soft:  rgba(192, 124, 26, 0.12);
+
+  /* ===========================
+     2c. BRAND — ACCENT
+     Terracotta
+     =========================== */
+  --accent:          #b85c3a;
+  --accent-dark:     #8e3f22;
+  --accent-soft:     rgba(184, 92, 58, 0.12);
+
+  /* ===========================
+     3. SEMANTIC COLORS
+     =========================== */
+  --success:         #4a7c59;
+  --success-soft:    rgba(74, 124, 89, 0.12);
+
+  --warning:         #c07c1a;
+  --warning-soft:    rgba(192, 124, 26, 0.14);
+
+  --danger:          #b84040;
+  --danger-soft:     rgba(184, 64, 64, 0.12);
+
+  --info:            #3a6ea8;
+  --info-soft:       rgba(58, 110, 168, 0.12);
+
+  /* ===========================
+     4. TEXT
+     =========================== */
+  --text-main:       #2c1810;   /* dark espresso                      */
+  --text-muted:      #8a6552;   /* warm taupe                         */
+
+  /* ===========================
+     5. BORDERS
+     =========================== */
+  --border-subtle:   rgba(130, 85, 45, 0.18);
+  --border-strong:   rgba(130, 85, 45, 0.38);
+
+  /* ===========================
+     6. SHADOWS — Sketch / Comic Panel Style
+     Hard offset shadow simulates hand-drawn panels
+     =========================== */
+  --shadow-soft:     4px 4px 0 rgba(130, 85, 45, 0.18);
+  --shadow-card:     3px 3px 0 rgba(130, 85, 45, 0.14);
+  --shadow-glow:     6px 6px 0 rgba(124, 74, 30, 0.24);
+
+  /* ===========================
+     7. SHAPE — Organic / Irregular Corners
+     Different values per corner give a hand-drawn feel
+     =========================== */
+  --radius-lg:       18px 22px 16px 20px;
+  --radius-md:       10px 14px 10px 12px;
+  --radius-sm:        5px  8px  5px  6px;
+  --radius-pill:     999px;
+
+  /* ===========================
+     8. TYPOGRAPHY
+     =========================== */
+  --font-heading: 'DM Serif Display', 'Playfair Display', Georgia, serif;
+  --font-accent:  'Caveat', 'Permanent Marker', cursive;
+  --font-body:    'DM Sans', 'Nunito', system-ui, sans-serif;
+  --font-mono:    'JetBrains Mono', 'Fira Code', monospace;
+}

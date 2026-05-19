@@ -1,0 +1,2371 @@
+{
+  "project": "SnapBook",
+  "tagline": "Multi-Vendor Photography Booking Platform",
+  "version": "1.0.0",
+  "created": "2026-04-15",
+  "stack": {
+    "frontend": "React 18 CDN + Vanilla JS (no build step)",
+    "backend": "Node.js 18+ / Express 5",
+    "database": "MongoDB Atlas / Mongoose 9",
+    "ai": "Groq API (llama-3.3-70b)",
+    "realtime": "Socket.io 4",
+    "auth": "JWT (jsonwebtoken) + bcryptjs"
+  },
+  "legend": {
+    "priority": {
+      "critical": "Blocks launch — must fix before go-live",
+      "high": "Important feature, fix before release",
+      "medium": "Improves UX/DX, fix soon",
+      "low": "Nice to have"
+    },
+    "status": {
+      "completed": "Done and verified",
+      "in-progress": "Partially implemented",
+      "pending": "Not started",
+      "blocked": "Waiting on dependency"
+    },
+    "type": "frontend | backend | database | ai | security | performance | testing | devops"
+  },
+  "modules": [
+    {
+      "id": "M01",
+      "name": "Authentication & User Management",
+      "description": "JWT-based auth for all three roles: customer, photographer, admin",
+      "tasks": [
+        {
+          "id": "T01.01",
+          "title": "JWT Register Endpoint",
+          "description": "POST /api/auth/register — create customer or photographer account",
+          "priority": "critical",
+          "status": "completed",
+          "type": "backend",
+          "file": "backend/controllers/authController.js",
+          "subtasks": [
+            "Hash password with bcrypt (saltRounds=10)",
+            "Block admin role on public register",
+            "Set isApproved=false for photographers",
+            "Return JWT token + user object on success"
+          ],
+          "acceptance_criteria": [
+            "Returns 201 with token on valid input",
+            "Returns 400 with errors array on invalid input",
+            "Duplicate email returns 400"
+          ]
+        },
+        {
+          "id": "T01.02",
+          "title": "Input Validation on Register",
+          "description": "express-validator rules: email format, password min 6, name 2-50 chars, role enum",
+          "priority": "critical",
+          "status": "completed",
+          "type": "backend",
+          "file": "backend/controllers/authController.js",
+          "subtasks": [
+            "email: isEmail + normalizeEmail",
+            "password: minLength 6",
+            "name: trim + isLength 2-50",
+            "role: optional, isIn(['customer','photographer'])",
+            "Return 400 with errors array on failure"
+          ],
+          "acceptance_criteria": [
+            "Invalid email returns 400 with field-level errors array",
+            "Password shorter than 6 chars returns 400",
+            "Invalid role value returns 400"
+          ]
+        },
+        {
+          "id": "T01.03",
+          "title": "JWT Login Endpoint",
+          "description": "POST /api/auth/login — email+password auth, blocks unapproved photographers",
+          "priority": "critical",
+          "status": "completed",
+          "type": "backend",
+          "file": "backend/controllers/authController.js",
+          "subtasks": [
+            "Find user by email",
+            "Compare password with bcrypt hash",
+            "Block photographer if isApproved=false (403)",
+            "Return token + user object (id, name, email, role)"
+          ],
+          "acceptance_criteria": [
+            "Valid credentials return 200 with token",
+            "Wrong password returns 400",
+            "Unapproved photographer returns 403"
+          ]
+        },
+        {
+          "id": "T01.04",
+          "title": "Auth Middleware (protect)",
+          "description": "Verify Bearer JWT on protected routes, attach req.user",
+          "priority": "critical",
+          "status": "completed",
+          "type": "backend",
+          "file": "backend/middleware/authMiddleware.js",
+          "subtasks": [
+            "Extract Bearer token from Authorization header",
+            "Verify with JWT_SECRET",
+            "Attach decoded payload to req.user",
+            "Return 401 on missing or expired token"
+          ],
+          "acceptance_criteria": [
+            "Missing token returns 401",
+            "Expired token returns 401",
+            "Valid token populates req.user with id and role"
+          ]
+        },
+        {
+          "id": "T01.05",
+          "title": "Role-Based Authorization Middleware",
+          "description": "authorizeRoles(...roles) factory — block unauthorized roles with 403",
+          "priority": "critical",
+          "status": "completed",
+          "type": "backend",
+          "file": "backend/middleware/authMiddleware.js",
+          "subtasks": [
+            "Check req.user.role against allowed roles array",
+            "Return 403 if not authorized"
+          ],
+          "acceptance_criteria": [
+            "Customer hitting admin route gets 403",
+            "Admin hitting admin route succeeds"
+          ]
+        },
+        
+        {
+          "id": "T01.07",
+          "title": "Forgot Password Flow",
+          "description": "POST /api/auth/forgot-password + POST /api/auth/reset-password",
+          "priority": "medium",
+          "status": "pending",
+          "type": "backend",
+          "file": "backend/controllers/authController.js",
+          "subtasks": [
+            "Generate signed 1-hour reset token via crypto.randomBytes",
+            "Store hashed token + expiry on User document",
+            "Send reset link via nodemailer (configure SMTP_HOST, SMTP_USER, SMTP_PASS in .env)",
+            "POST /api/auth/reset-password: verify token, hash new password, clear token fields",
+            "Return 200 for unknown emails to prevent user enumeration"
+          ],
+          "acceptance_criteria": [
+            "Reset email sent for known email addresses",
+            "Unknown email returns 200 (no info leak)",
+            "Expired token returns 400",
+            "Valid token allows password change"
+          ]
+        },
+        {
+          "id": "T01.08",
+          "title": "Frontend — Login Page",
+          "description": "login.html: form -> POST /api/auth/login -> store token + redirect by role",
+          "priority": "critical",
+          "status": "in-progress",
+          "type": "frontend",
+          "file": "frontend/public/login.html",
+          "subtasks": [
+            "Show loading spinner on submit",
+            "Display error message from API response",
+            "Store token as localStorage 'token', user object as 'user'",
+            "Redirect customer -> /customer-dashboard.html",
+            "Redirect photographer -> /photographer-dashboard.html",
+            "Redirect admin -> /admin-dashboard.html"
+          ],
+          "acceptance_criteria": [
+            "Successful login redirects to correct dashboard per role",
+            "Failed login shows error message inline",
+            "Token stored in localStorage"
+          ]
+        },
+        {
+          "id": "T01.09",
+          "title": "Frontend — Register Page",
+          "description": "register.html: form -> POST /api/auth/register -> auto-login or show pending message",
+          "priority": "critical",
+          "status": "in-progress",
+          "type": "frontend",
+          "file": "frontend/public/register.html",
+          "subtasks": [
+            "Role selector: customer / photographer",
+            "Client-side validation mirroring backend rules",
+            "Show 'Pending admin approval' message for photographer registrations",
+            "Auto-login and redirect customer on success",
+            "Show field-level validation errors"
+          ],
+          "acceptance_criteria": [
+            "Photographer sees pending approval message after register",
+            "Customer auto-logged in and redirected to dashboard",
+            "Validation errors shown inline per field"
+          ]
+        },
+        {
+          "id": "T01.10",
+          "title": "Admin Creation Script",
+          "description": "scripts/createadmin.js — seed admin user from CLI args",
+          "priority": "high",
+          "status": "completed",
+          "type": "backend",
+          "file": "backend/scripts/createadmin.js",
+          "subtasks": [
+            "Accept email and password from CLI args or env vars",
+            "Check for existing admin to prevent duplicates"
+          ],
+          "acceptance_criteria": [
+            "Running script creates admin user in DB",
+            "Re-running does not create duplicate"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "M02",
+      "name": "User (Client) Module — Frontend",
+      "description": "All customer-facing pages and interactions",
+      "tasks": [
+        {
+          "id": "T02.01",
+          "title": "Homepage — Photographer Listing (index.html)",
+          "description": "Paginated, filterable grid of photographers with Book button",
+          "priority": "critical",
+          "status": "completed",
+          "type": "frontend",
+          "file": "frontend/public/index.html",
+          "subtasks": [
+            "Search bar by name/specialization",
+            "Filters: city, event type, min/max price",
+            "Sort: rating, price asc/desc, newest",
+            "Pagination controls (prev/next + page numbers)",
+            "Photographer card: photo, name, city, price/hr, rating stars",
+            "Book button links to /photographer-profile.html?slug=..."
+          ],
+          "acceptance_criteria": [
+            "Filters update results without full page reload",
+            "Empty state message shown when no results match",
+            "Pagination meta (total, pages) rendered correctly"
+          ]
+        },
+        {
+          "id": "T02.02",
+          "title": "Photographer Public Profile Page",
+          "description": "photographer-profile.html: full profile, portfolio, packages, availability, Book Now",
+          "priority": "critical",
+          "status": "completed",
+          "type": "frontend",
+          "file": "frontend/public/photographer-profile.html",
+          "subtasks": [
+            "Fetch profile by ?slug= query param via GET /api/photographers/:slug",
+            "Display bio, specialization, city, experience, rating",
+            "Portfolio photo grid with lazy loading",
+            "Packages / pricing cards",
+            "Available dates calendar view",
+            "Book Now button: redirect to login if unauthenticated, else cart flow",
+            "Reviews section (most recent 5)"
+          ],
+          "acceptance_criteria": [
+            "Page loads correctly for valid slug",
+            "404/not-found state shown for invalid slug",
+            "Unauthenticated user redirected to login on Book Now"
+          ]
+        },
+        {
+          "id": "T02.03",
+          "title": "Customer Dashboard",
+          "description": "customer-dashboard.html: orders, wishlist, profile, reviews tabs",
+          "priority": "critical",
+          "status": "completed",
+          "type": "frontend",
+          "file": "frontend/public/customer-dashboard.html",
+          "subtasks": [
+            "Tab: My Bookings — paginated order list with status badges",
+            "Tab: Wishlist — saved photographers with remove action",
+            "Tab: Profile — update name, phone, profile image",
+            "Tab: Reviews — reviews I have left",
+            "Cancel button for pending orders",
+            "Leave Review button for completed orders (opens review modal)"
+          ],
+          "acceptance_criteria": [
+            "Orders display with correct status badges",
+            "Review button only appears for completed orders without a review",
+            "Pagination works on orders list"
+          ]
+        },
+        {
+          "id": "T02.04",
+          "title": "Cart & Checkout Flow",
+          "description": "Add to cart, view cart, apply coupon, proceed to payment",
+          "priority": "critical",
+          "status": "in-progress",
+          "type": "frontend",
+          "file": "frontend/public/customer-dashboard.html",
+          "subtasks": [
+            "Cart tab: list items with event date, type, location, duration, price",
+            "Remove item from cart",
+            "Coupon code input + apply (calls POST /api/coupon/apply)",
+            "Order summary: subtotal, discount, total",
+            "Proceed to Checkout button -> payment.html"
+          ],
+          "acceptance_criteria": [
+            "Cart persists across page refreshes (fetched from DB)",
+            "Applied coupon shows discount amount",
+            "Empty cart shows appropriate empty-state message"
+          ]
+        },
+        {
+          "id": "T02.05",
+          "title": "Payment Page — Dummy Credit Card + Manual Transfer",
+          "description": "payment.html with dummy card form and manual bank transfer option",
+          "priority": "high",
+          "status": "pending",
+          "type": "frontend",
+          "file": "frontend/public/payment.html",
+          "subtasks": [
+            "Create payment.html in Creative Sketchbook design",
+            "Order summary section (items, subtotal, coupon discount, total)",
+            "Tab: Pay by Card — card number (XXXX XXXX XXXX XXXX format), name, expiry MM/YY, CVV (show/hide toggle)",
+            "Tab: Manual Transfer — bank account details, upload proof of payment",
+            "Client-side card validation: 16 digits, expiry not in past",
+            "Submit calls POST /api/payments",
+            "Redirect to order-confirmation.html on success"
+          ],
+          "acceptance_criteria": [
+            "Card number formatted with spaces as user types",
+            "Past expiry date rejected before submission",
+            "Successful submission creates order and clears cart",
+            "Full card number never sent to or stored in backend"
+          ]
+        },
+        {
+          "id": "T02.06",
+          "title": "Order Confirmation Page",
+          "description": "order-confirmation.html: show confirmed order details after payment",
+          "priority": "medium",
+          "status": "pending",
+          "type": "frontend",
+          "file": "frontend/public/order-confirmation.html",
+          "subtasks": [
+            "Read orderId from URL ?orderId= query param",
+            "Fetch GET /api/orders/:orderId and display details",
+            "Show success animation",
+            "CTA buttons: View All Orders / Back to Home"
+          ],
+          "acceptance_criteria": [
+            "Order details displayed correctly from DB",
+            "Works for both card and manual payment"
+          ]
+        },
+        {
+          "id": "T02.07",
+          "title": "Review & Rating Submission",
+          "description": "Modal after order completion: star rating + comment -> POST /api/reviews",
+          "priority": "high",
+          "status": "in-progress",
+          "type": "frontend",
+          "file": "frontend/public/customer-dashboard.html",
+          "subtasks": [
+            "Interactive star rating widget (1-5, hover highlight)",
+            "Text comment field (max 1000 chars with counter)",
+            "POST /api/reviews on submit",
+            "Disable 'Leave Review' button after submission",
+            "Show submitted review inline in order card"
+          ],
+          "acceptance_criteria": [
+            "Review can only be submitted for completed orders",
+            "Rating widget is keyboard accessible",
+            "Review appears immediately after submission"
+          ]
+        },
+        {
+          "id": "T02.08",
+          "title": "Wishlist Toggle on Photographer Cards",
+          "description": "Heart icon on cards and profile page toggles wishlist state",
+          "priority": "medium",
+          "status": "in-progress",
+          "type": "frontend",
+          "subtasks": [
+            "Heart icon on photographer listings and profile page",
+            "Filled heart = in wishlist, outline = not in wishlist",
+            "POST /api/wishlist to add, DELETE /api/wishlist/:photographerId to remove",
+            "Load current wishlist state on page load for logged-in users",
+            "Prompt login for unauthenticated users"
+          ],
+          "acceptance_criteria": [
+            "Heart state persists across page reloads",
+            "Works only for logged-in users"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "M03",
+      "name": "User (Client) Module — Backend API",
+      "description": "All customer-facing API endpoints",
+      "tasks": [
+        {
+          "id": "T03.01",
+          "title": "GET /api/photographers — Search, Filter, Paginate",
+          "description": "Paginated list with search, city, eventType, price range, sort",
+          "priority": "critical",
+          "status": "completed",
+          "type": "backend",
+          "file": "backend/controllers/photographerController.js",
+          "subtasks": [
+            "Pagination: ?page=1&limit=10 (default limit 10, max 50)",
+            "Search by name/specialization (case-insensitive regex)",
+            "Filter by city (case-insensitive)",
+            "Filter by eventType array ($in query)",
+            "Filter by priceMin/priceMax range",
+            "Sort by rating, price asc/desc, experience, newest",
+            "Only return isPublished=true profiles",
+            "Return total count for pagination meta"
+          ],
+          "acceptance_criteria": [
+            "Returns photographers matching all active filters simultaneously",
+            "Returns correct total for pagination meta",
+            "Only published profiles returned on public route"
+          ]
+        },
+        {
+          "id": "T03.02",
+          "title": "GET /api/photographers/:slug — Public Profile",
+          "description": "Fetch full photographer profile by slug",
+          "priority": "critical",
+          "status": "in-progress",
+          "type": "backend",
+          "file": "backend/routes/photographerRoutes.js",
+          "subtasks": [
+            "Find PhotographerProfile by slug field",
+            "Populate userId for name, email, profileImage",
+            "Include Portfolio images array",
+            "Include Packages array",
+            "Include latest 5 Reviews with customer name",
+            "Return 404 if not found or isPublished=false"
+          ],
+          "acceptance_criteria": [
+            "Returns full profile data for valid slug",
+            "Returns 404 for unknown or unpublished slug",
+            "Response does not expose hashed password or sensitive fields"
+          ]
+        },
+        {
+          "id": "T03.03",
+          "title": "POST /api/orders — Create Order from Cart",
+          "description": "Create order(s) from cart items with conflict check, clear cart",
+          "priority": "critical",
+          "status": "completed",
+          "type": "backend",
+          "file": "backend/controllers/orderController.js",
+          "subtasks": [
+            "Verify cart is not empty",
+            "For each cart item: check double-booking conflict (T05.04)",
+            "Create Order document with status=pending, paymentStatus=pending",
+            "Clear cart after all orders created",
+            "Return array of created order IDs"
+          ],
+          "acceptance_criteria": [
+            "Empty cart returns 400",
+            "Conflicting date/photographer returns 409",
+            "Cart cleared on success"
+          ]
+        },
+        {
+          "id": "T03.04",
+          "title": "GET /api/orders — Customer Orders (Paginated)",
+          "description": "Get authenticated customer's orders with pagination and status filter",
+          "priority": "critical",
+          "status": "completed",
+          "type": "backend",
+          "file": "backend/controllers/orderController.js",
+          "subtasks": [
+            "Filter by customerId from JWT (customer sees only their own orders)",
+            "Optional ?status= filter (pending, confirmed, completed, cancelled)",
+            "Pagination: ?page=1&limit=10",
+            "Populate photographerId: name, email, profileImage",
+            "Return pagination meta: page, limit, total, pages"
+          ],
+          "acceptance_criteria": [
+            "Returns only orders for the authenticated customer",
+            "Pagination meta is correct",
+            "Status filter applied correctly"
+          ]
+        },
+        {
+          "id": "T03.05",
+          "title": "PATCH /api/orders/:id/cancel — Customer Cancel Order",
+          "description": "Customer cancels a pending order, frees up slot",
+          "priority": "high",
+          "status": "pending",
+          "type": "backend",
+          "file": "backend/controllers/orderController.js",
+          "subtasks": [
+            "Verify order belongs to authenticated customer",
+            "Allow cancel only if status is 'pending'",
+            "Set status='cancelled', cancellationReason from body, cancellationAt=now",
+            "Mark corresponding Availability slot as not booked",
+            "Emit Socket.io 'booking_cancelled' event to photographer's room",
+            "Add OrderTimeline entry"
+          ],
+          "acceptance_criteria": [
+            "Returns 400 if order is already confirmed or completed",
+            "Cancelled order status updates and persists",
+            "Availability slot freed up for rebooking",
+            "Photographer receives Socket.io notification"
+          ]
+        },
+        {
+          "id": "T03.06",
+          "title": "POST /api/reviews — Submit Review",
+          "description": "Submit rating + comment for a completed order",
+          "priority": "high",
+          "status": "in-progress",
+          "type": "backend",
+          "file": "backend/routes/reviewRoutes.js",
+          "subtasks": [
+            "Validate: orderId belongs to authenticated customer",
+            "Validate: order status must be 'completed'",
+            "Prevent duplicate review: check existing Review for same orderId+customerId",
+            "Create Review document",
+            "Recalculate PhotographerProfile.rating (aggregate avg) and update totalReviews"
+          ],
+          "acceptance_criteria": [
+            "Returns 400 if order not completed",
+            "Returns 409 if review already exists for this order",
+            "PhotographerProfile.rating updated correctly after new review"
+          ]
+        },
+        {
+          "id": "T03.07",
+          "title": "Cart CRUD API",
+          "description": "Add / view / remove / clear cart items",
+          "priority": "high",
+          "status": "completed",
+          "type": "backend",
+          "file": "backend/controllers/cartController.js",
+          "subtasks": [
+            "POST /api/cart/add — add item (photographerId, eventDate, eventType, location, duration, pricePerHour, notes)",
+            "GET /api/cart — get current user's cart",
+            "DELETE /api/cart/remove/:itemId — remove single item",
+            "DELETE /api/cart/clear — clear all items",
+            "Auto-calculate totalCost on add/remove"
+          ],
+          "acceptance_criteria": [
+            "Cart is per-user (linked by userId from JWT)",
+            "totalCost is always correct",
+            "Removing non-existent item returns 404"
+          ]
+        },
+        {
+          "id": "T03.08",
+          "title": "Wishlist API",
+          "description": "Add / remove / list wishlisted photographers",
+          "priority": "medium",
+          "status": "completed",
+          "type": "backend",
+          "file": "backend/controllers/wishlistController.js",
+          "subtasks": [
+            "POST /api/wishlist — add photographerId (no duplicates)",
+            "GET /api/wishlist — list with populated PhotographerProfile data",
+            "DELETE /api/wishlist/:photographerId — remove from wishlist",
+            "Toggle behavior: add if absent, remove if present"
+          ],
+          "acceptance_criteria": [
+            "No duplicate photographer entries per user",
+            "GET response includes populated photographer details"
+          ]
+        },
+        {
+          "id": "T03.09",
+          "title": "POST /api/coupon/apply — Validate and Apply Coupon",
+          "description": "Validate coupon code, return discount details",
+          "priority": "medium",
+          "status": "in-progress",
+          "type": "backend",
+          "file": "backend/routes/couponRoutes.js",
+          "subtasks": [
+            "Find Coupon by code (case-insensitive)",
+            "Check isActive=true",
+            "Check expiryDate is in future",
+            "Check usageCount < maxUses",
+            "Return discountType (percentage/fixed) and value",
+            "Increment usageCount when order is created with coupon"
+          ],
+          "acceptance_criteria": [
+            "Expired coupon returns 400 with message",
+            "Max-used coupon returns 400",
+            "Valid coupon returns discount type and value"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "M04",
+      "name": "Photographer (Vendor) Module — Frontend",
+      "description": "Photographer dashboard and management tools",
+      "tasks": [
+        {
+          "id": "T04.01",
+          "title": "Photographer Dashboard",
+          "description": "photographer-dashboard.html: overview, bookings, profile, portfolio, availability, packages, earnings",
+          "priority": "critical",
+          "status": "completed",
+          "type": "frontend",
+          "file": "frontend/public/photographer-dashboard.html",
+          "subtasks": [
+            "Stats cards: total earnings, pending bookings, completed shoots, rating",
+            "Incoming bookings table: accept / decline actions",
+            "Profile editor: bio, city, specialization, event types, pricePerHour",
+            "Portfolio: image upload grid with delete option",
+            "Availability calendar: mark available/unavailable day slots",
+            "Packages section: add/edit/delete packages",
+            "Earnings tab: revenue chart + breakdown table"
+          ],
+          "acceptance_criteria": [
+            "Stats reflect real DB data on load",
+            "Accept/decline updates DB and removes row from pending list",
+            "Portfolio images rendered in grid"
+          ]
+        },
+        {
+          "id": "T04.02",
+          "title": "Portfolio Image Upload UI",
+          "description": "Multi-file upload with preview, validation, and progress",
+          "priority": "high",
+          "status": "in-progress",
+          "type": "frontend",
+          "subtasks": [
+            "Multi-file input: accept jpg, png, webp",
+            "Client-side: reject files > 5MB and non-image types before upload",
+            "Show thumbnail previews before upload",
+            "Upload progress indicator per file",
+            "POST /api/photographers/portfolio (multipart/form-data)",
+            "Delete icon on each uploaded image calls DELETE /api/photographers/portfolio/:id"
+          ],
+          "acceptance_criteria": [
+            "Invalid file type rejected client-side before upload",
+            "Uploaded images appear in portfolio grid immediately",
+            "Delete removes image from both UI and server"
+          ]
+        },
+        {
+          "id": "T04.03",
+          "title": "Availability Calendar UI",
+          "description": "Interactive monthly calendar to set available/unavailable dates and time slots",
+          "priority": "critical",
+          "status": "pending",
+          "type": "frontend",
+          "file": "frontend/public/photographer-dashboard.html",
+          "subtasks": [
+            "Monthly calendar grid (built with CSS Grid, no external dependency needed)",
+            "Click a day to toggle available (green) / unavailable (grey)",
+            "Already-booked days shown as red (not clickable)",
+            "Half-day option toggle (morning/afternoon)",
+            "Save button calls POST /api/availability with selected dates",
+            "Load existing availability on calendar render"
+          ],
+          "acceptance_criteria": [
+            "Booked dates displayed in red and cannot be changed",
+            "Saved availability persists after page reload",
+            "Calendar navigates between months"
+          ]
+        },
+        {
+          "id": "T04.04",
+          "title": "Pricing Packages Manager",
+          "description": "Create/edit/delete service packages (Basic, Standard, Premium)",
+          "priority": "high",
+          "status": "in-progress",
+          "type": "frontend",
+          "file": "frontend/public/photographer-dashboard.html",
+          "subtasks": [
+            "Packages listed as cards with edit/delete buttons",
+            "Create form: name, description, price (PKR), duration (hours), features (chip input)",
+            "POST /api/packages, PUT /api/packages/:id, DELETE /api/packages/:id",
+            "Packages appear on public profile page automatically"
+          ],
+          "acceptance_criteria": [
+            "New package appears on public profile within 5 seconds of save",
+            "Price must be a positive number",
+            "At least one package must exist before profile can be published"
+          ]
+        },
+        {
+          "id": "T04.05",
+          "title": "Earnings Dashboard",
+          "description": "Revenue chart, payout summary, commission breakdown",
+          "priority": "medium",
+          "status": "in-progress",
+          "type": "frontend",
+          "file": "frontend/public/photographer-dashboard.html",
+          "subtasks": [
+            "Total gross earnings, platform commission, net earnings summary cards",
+            "Pending payout amount",
+            "Bar chart: earnings by month for last 6 months (Chart.js)",
+            "Completed shoots table: date, client, amount, commission, net"
+          ],
+          "acceptance_criteria": [
+            "Commission correctly deducted from gross in all displays",
+            "Chart renders last 6 months correctly",
+            "Data matches what admin sees in Commission panel"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "M05",
+      "name": "Photographer (Vendor) Module — Backend API",
+      "description": "All photographer-specific API endpoints",
+      "tasks": [
+        {
+          "id": "T05.01",
+          "title": "GET + PUT /api/photographers/profile — Profile CRUD",
+          "description": "Get and update own photographer profile",
+          "priority": "critical",
+          "status": "completed",
+          "type": "backend",
+          "file": "backend/controllers/photographerController.js",
+          "subtasks": [
+            "Create profile document if it does not exist on first PUT",
+            "Validate pricePerHour is a positive number",
+            "Validate eventTypes is an array of allowed values",
+            "Auto-generate URL-safe slug from user name if slug not set",
+            "Return complete profile in response"
+          ],
+          "acceptance_criteria": [
+            "Profile created on first update call",
+            "Slug is unique across photographers",
+            "Profile returned in full for GET"
+          ]
+        },
+        {
+          "id": "T05.02",
+          "title": "Portfolio Image Upload API",
+          "description": "POST /api/photographers/portfolio — multer upload, return served URL",
+          "priority": "high",
+          "status": "in-progress",
+          "type": "backend",
+          "subtasks": [
+            "Install multer and configure disk storage to backend/uploads/",
+            "Validate file MIME type (jpeg, png, webp only — check buffer, not extension)",
+            "Limit file size to 5MB per file in multer config",
+            "Generate UUID-based filename to prevent path traversal",
+            "Save file paths to Portfolio model linked to photographerId",
+            "Serve uploads/ directory as express.static",
+            "DELETE /api/photographers/portfolio/:id — delete file from disk and DB"
+          ],
+          "acceptance_criteria": [
+            "Non-image files rejected with 400",
+            "Images accessible at /uploads/uuid.jpg",
+            "Deleting removes file from disk"
+          ]
+        },
+        {
+          "id": "T05.03",
+          "title": "Availability CRUD API",
+          "description": "GET/POST/DELETE /api/availability — manage available dates",
+          "priority": "critical",
+          "status": "in-progress",
+          "type": "backend",
+          "file": "backend/routes/availabilityRoutes.js",
+          "subtasks": [
+            "Availability schema: photographerId, date, isFullDayUnavailable, slots:[{startTime,endTime,isBooked}]",
+            "Compound unique index: {photographerId:1, date:1}",
+            "GET /api/availability/:photographerId?month=YYYY-MM — return month availability",
+            "POST /api/availability — set availability for a date",
+            "DELETE /api/availability/:date — mark date unavailable (cannot delete if slot is booked)"
+          ],
+          "acceptance_criteria": [
+            "Booked slots cannot be deleted",
+            "Returns correct availability for requested month",
+            "Conflict check used in order creation flow"
+          ]
+        },
+        {
+          "id": "T05.04",
+          "title": "Double Booking Prevention",
+          "description": "Atomic conflict check before creating any order",
+          "priority": "critical",
+          "status": "pending",
+          "type": "backend",
+          "file": "backend/controllers/orderController.js",
+          "subtasks": [
+            "Before order creation: Order.findOne({ photographerId, eventDate, status: { $nin: ['cancelled'] } })",
+            "Return 409 'This photographer is already booked on that date' if conflict found",
+            "Also check Availability.isFullDayUnavailable for manual blocks",
+            "Use findOneAndUpdate with conditions for atomicity to prevent race conditions"
+          ],
+          "acceptance_criteria": [
+            "Second booking for same photographer+date returns 409",
+            "First booking proceeds normally",
+            "Cancellation frees up slot for rebooking"
+          ]
+        },
+        {
+          "id": "T05.05",
+          "title": "PATCH /api/orders/:id/accept and /decline — Respond to Booking",
+          "description": "Photographer accepts or declines an incoming order",
+          "priority": "critical",
+          "status": "pending",
+          "type": "backend",
+          "file": "backend/controllers/orderController.js",
+          "subtasks": [
+            "Verify req.user is the assigned photographer for this order",
+            "Accept: set status='confirmed', acceptedAt=now",
+            "Decline: set status='cancelled', cancellationReason='Photographer declined'",
+            "Emit Socket.io 'booking_accepted' or 'booking_declined' event to customer room",
+            "Create OrderTimeline entry for each status change"
+          ],
+          "acceptance_criteria": [
+            "Only assigned photographer can accept/decline",
+            "Wrong photographer gets 403",
+            "Customer receives live Socket.io notification",
+            "Order status changes correctly and immediately"
+          ]
+        },
+        {
+          "id": "T05.06",
+          "title": "Packages CRUD API",
+          "description": "Full CRUD for photographer service packages",
+          "priority": "high",
+          "status": "in-progress",
+          "type": "backend",
+          "file": "backend/routes/packageRoutes.js",
+          "subtasks": [
+            "GET /api/packages/:photographerId — public, no auth required",
+            "POST /api/packages — create (photographer auth, owns via JWT)",
+            "PUT /api/packages/:id — update (photographer auth, own package only)",
+            "DELETE /api/packages/:id — delete (photographer auth, own package only)"
+          ],
+          "acceptance_criteria": [
+            "Photographer can only CRUD their own packages",
+            "Packages visible publicly on profile page without auth",
+            "Attempting to modify another photographer's package returns 403"
+          ]
+        },
+        {
+          "id": "T05.07",
+          "title": "Photographer Earnings Summary API",
+          "description": "GET /api/commission/photographer — net earnings for logged-in photographer",
+          "priority": "medium",
+          "status": "in-progress",
+          "type": "backend",
+          "file": "backend/routes/commissionRoutes.js",
+          "subtasks": [
+            "Aggregate completed Orders for photographerId",
+            "Deduct platform commission percentage (configurable in .env COMMISSION_RATE)",
+            "Group by month for last 6 months (chart data)",
+            "Return: gross, commissionAmount, net, pendingPayout"
+          ],
+          "acceptance_criteria": [
+            "Only completed orders included",
+            "Monthly breakdown has correct 6 data points",
+            "Net amount matches gross minus commission"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "M06",
+      "name": "Admin Portal — Frontend",
+      "description": "React 18 CDN admin SPA with 9 tabs",
+      "tasks": [
+        {
+          "id": "T06.01",
+          "title": "Admin Dashboard — 9-Tab SPA",
+          "description": "admin-dashboard.html: React 18 with auth guard and full management UI",
+          "priority": "critical",
+          "status": "completed",
+          "type": "frontend",
+          "file": "frontend/public/admin-dashboard.html",
+          "subtasks": [
+            "JWT decode on load — redirect to login if not admin",
+            "Tab: Dashboard — stat cards + recent activity + pending approvals with approve/reject",
+            "Tab: Photographers — searchable table with approve/reject/suspend/reinstate",
+            "Tab: Users — customer list table (requires T07.02 backend endpoint)",
+            "Tab: Analytics — Chart.js line + bar + doughnut charts",
+            "Tab: Disputes — slide-out drawer with resolve action",
+            "Tab: Commission — payout queue with Mark Paid button (requires T07.07 backend)",
+            "Tab: FAQs — full CRUD with modal",
+            "Tab: Coupons — full CRUD with modal",
+            "Tab: Settings — platform config + change password form"
+          ],
+          "acceptance_criteria": [
+            "Non-admin users redirected to /login.html",
+            "All tabs load data from properly authenticated API calls",
+            "Actions (approve/reject) update the list immediately without full reload"
+          ]
+        },
+        {
+          "id": "T06.02",
+          "title": "Admin Users Tab — Wire to Backend",
+          "description": "Connect Users tab to GET /api/admin/users endpoint (currently missing)",
+          "priority": "high",
+          "status": "pending",
+          "type": "frontend",
+          "file": "frontend/public/admin-dashboard.html",
+          "subtasks": [
+            "Call GET /api/admin/users?role=customer&page=1&limit=20 on tab open",
+            "Render table: name, email, role, createdAt, isActive status badge",
+            "Block/Unblock button calls PATCH /api/admin/users/:id/block or /unblock",
+            "Pagination controls"
+          ],
+          "acceptance_criteria": [
+            "All customers listed with pagination",
+            "Block action visually reflects in table immediately"
+          ]
+        },
+        {
+          "id": "T06.03",
+          "title": "Admin Commission — Wire Mark Paid Button",
+          "description": "Connect Mark Paid button to PATCH /api/commission/:id/pay",
+          "priority": "medium",
+          "status": "pending",
+          "type": "frontend",
+          "file": "frontend/public/admin-dashboard.html",
+          "subtasks": [
+            "On click: PATCH /api/commission/:id/pay",
+            "Update row status to 'Paid' in UI on success",
+            "Move paid entries to separate section or dim them",
+            "Show success toast"
+          ],
+          "acceptance_criteria": [
+            "Mark Paid persists after page reload",
+            "Paid amount no longer shown in pending total"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "M07",
+      "name": "Admin Portal — Backend API",
+      "description": "Admin-only API endpoints for platform management",
+      "tasks": [
+        {
+          "id": "T07.01",
+          "title": "GET /api/admin/photographers — Paginated List",
+          "description": "List all photographers with pagination ?page=1&limit=20",
+          "priority": "critical",
+          "status": "completed",
+          "type": "backend",
+          "file": "backend/controllers/adminController.js",
+          "subtasks": [
+            "Returns photographers + pagination: {page, limit, total, pages}",
+            "Limit capped at 100"
+          ],
+          "acceptance_criteria": [
+            "Returns correct pagination meta",
+            "Admin-only route (403 for non-admin)"
+          ]
+        },
+        {
+          "id": "T07.02",
+          "title": "GET /api/admin/users — All Customers",
+          "description": "List all customer accounts with search and pagination",
+          "priority": "high",
+          "status": "pending",
+          "type": "backend",
+          "file": "backend/controllers/adminController.js",
+          "subtasks": [
+            "User.find({ role: req.query.role || 'customer' }).select('-password')",
+            "?search= filter by name or email (regex)",
+            "?page and ?limit pagination (default page=1, limit=20)",
+            "Return pagination meta",
+            "Admin-only (authorizeRoles('admin'))"
+          ],
+          "acceptance_criteria": [
+            "Returns only customers by default",
+            "Name/email search works",
+            "Non-admin gets 403"
+          ]
+        },
+        {
+          "id": "T07.03",
+          "title": "PATCH /api/admin/users/:id/block + /unblock",
+          "description": "Admin block/unblock user accounts",
+          "priority": "high",
+          "status": "pending",
+          "type": "backend",
+          "file": "backend/controllers/adminController.js",
+          "subtasks": [
+            "PATCH /block: set User.isActive=false",
+            "PATCH /unblock: set User.isActive=true",
+            "Auth middleware must check isActive on every request (T01.06)"
+          ],
+          "acceptance_criteria": [
+            "Blocked user's next API call returns 403",
+            "Admin can unblock user"
+          ]
+        },
+        {
+          "id": "T07.04",
+          "title": "PATCH /api/admin/photographers/:id/suspend + /reinstate",
+          "description": "Suspend or reinstate a photographer account",
+          "priority": "high",
+          "status": "in-progress",
+          "type": "backend",
+          "file": "backend/controllers/adminController.js",
+          "subtasks": [
+            "Suspend: isActive=false, isApproved=false, isPublished=false on PhotographerProfile",
+            "Reinstate: isActive=true, isApproved=true, isPublished=true",
+            "Suspended photographer hidden from public GET /api/photographers"
+          ],
+          "acceptance_criteria": [
+            "Suspended photographer no longer in public listing",
+            "Admin can reinstate suspended photographer"
+          ]
+        },
+        {
+          "id": "T07.05",
+          "title": "GET /api/admin/analytics — Platform Stats",
+          "description": "Aggregate stats for admin dashboard analytics tab",
+          "priority": "high",
+          "status": "in-progress",
+          "type": "backend",
+          "file": "backend/routes/analyticsRoutes.js",
+          "subtasks": [
+            "Total customers, total photographers (approved/pending/suspended breakdown)",
+            "Total orders by status",
+            "Total platform revenue (sum of commission amounts from completed orders)",
+            "Monthly booking counts for last 12 months (array of 12 numbers)",
+            "Top 5 photographers by total completed bookings",
+            "Use MongoDB aggregation pipeline with indexed fields"
+          ],
+          "acceptance_criteria": [
+            "All stats computed server-side with aggregation",
+            "Monthly array always has exactly 12 data points",
+            "Endpoint returns in < 500ms (due to indexes)"
+          ]
+        },
+        {
+          "id": "T07.06",
+          "title": "Dispute CRUD API",
+          "description": "Create, list, and resolve disputes",
+          "priority": "high",
+          "status": "in-progress",
+          "type": "backend",
+          "file": "backend/routes/disputeRoutes.js",
+          "subtasks": [
+            "POST /api/disputes — customer reports dispute (auth required)",
+            "GET /api/disputes — admin lists all disputes with ?status filter and pagination",
+            "PATCH /api/disputes/:id — admin resolves: set resolution text, status='resolved', resolvedBy, resolvedAt",
+            "Emit Socket.io 'dispute_resolved' to both customer and photographer rooms"
+          ],
+          "acceptance_criteria": [
+            "Dispute list paginated",
+            "Resolution stored with admin user ID and timestamp",
+            "Both parties notified via Socket.io"
+          ]
+        },
+        {
+          "id": "T07.07",
+          "title": "Commission Payout API",
+          "description": "Auto-create commissions on order completion; admin marks paid",
+          "priority": "medium",
+          "status": "in-progress",
+          "type": "backend",
+          "file": "backend/routes/commissionRoutes.js",
+          "subtasks": [
+            "Commission document auto-created when order status changes to 'completed'",
+            "Commission rate pulled from COMMISSION_RATE .env variable (default 10%)",
+            "GET /api/commission — admin: list pending and paid commissions with pagination",
+            "PATCH /api/commission/:id/pay — admin marks commission paid: status='paid', paidAt=now",
+            "GET /api/commission/photographer — photographer sees own earnings (net after commission)"
+          ],
+          "acceptance_criteria": [
+            "Commission created automatically on order completion",
+            "Paid commissions excluded from pending payout totals",
+            "COMMISSION_RATE configurable without code change"
+          ]
+        },
+        {
+          "id": "T07.08",
+          "title": "FAQ CRUD API",
+          "description": "Admin manages FAQs; public reads them",
+          "priority": "low",
+          "status": "completed",
+          "type": "backend",
+          "file": "backend/routes/faqRoutes.js",
+          "subtasks": [
+            "GET /api/faq — public, no auth, returns active FAQs",
+            "POST /api/faq — admin only, create FAQ",
+            "PUT /api/faq/:id — admin only, update",
+            "DELETE /api/faq/:id — admin only, soft or hard delete"
+          ],
+          "acceptance_criteria": [
+            "Public can read FAQs without auth",
+            "Non-admin POST/PUT/DELETE returns 403"
+          ]
+        },
+        {
+          "id": "T07.09",
+          "title": "Coupon CRUD API",
+          "description": "Admin manages coupons; customers apply them",
+          "priority": "medium",
+          "status": "completed",
+          "type": "backend",
+          "file": "backend/routes/couponRoutes.js",
+          "subtasks": [
+            "GET /api/coupon — admin list all coupons",
+            "POST /api/coupon — create: code, discountType (percentage|fixed), value, expiryDate, maxUses",
+            "PUT /api/coupon/:id — update",
+            "DELETE /api/coupon/:id — delete",
+            "POST /api/coupon/apply — customer validates code (see T03.09)",
+            "Reject duplicate coupon codes"
+          ],
+          "acceptance_criteria": [
+            "Duplicate coupon code returns 400",
+            "Expired or maxed coupon returns 400 on apply"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "M08",
+      "name": "AI Agent — Chatbot",
+      "description": "Groq-powered chatbot with real-time DB querying and NLP intent extraction",
+      "tasks": [
+        {
+          "id": "T08.01",
+          "title": "Chatbot Widget — Frontend (chatbot.js)",
+          "description": "Self-contained floating chatbot IIFE loaded on all pages",
+          "priority": "high",
+          "status": "completed",
+          "type": "frontend",
+          "file": "frontend/public/chatbot.js",
+          "subtasks": [
+            "56px trigger button with pulse badge after 4 seconds",
+            "380x560px fixed chat window with hard shadow",
+            "Message bubbles with timestamps",
+            "Bounce-dot loading animation during API call",
+            "Quick reply chips: Find Photographer, My Orders, How to Book, Refund Policy",
+            "Photographer card rendering (Polaroid style with name, city, price, rating)",
+            "Order timeline rendering (vertical dashed timeline)",
+            "XSS-safe rendering via esc() function (no innerHTML with user data)",
+            "Bearer token sent with every POST /api/chat call",
+            "Redirect to /login.html on 401 response",
+            "Rolling 6-message conversation history passed to API"
+          ],
+          "acceptance_criteria": [
+            "Chatbot loads on index.html, customer-dashboard, photographer-dashboard, photographer-profile",
+            "Renders photographer cards from API response",
+            "Rate limit error (429) shown as friendly message"
+          ]
+        },
+        {
+          "id": "T08.02",
+          "title": "Chatbot Backend — POST /api/chat",
+          "description": "Intent detection, DB query, Groq call, structured response",
+          "priority": "high",
+          "status": "completed",
+          "type": "backend",
+          "file": "backend/controllers/chatbotController.js",
+          "subtasks": [
+            "Classify intent: photographer_search | booking_status | faq | general",
+            "photographer_search: extract params (city, budget, eventType) -> query PhotographerProfile -> pass results to Groq as context",
+            "booking_status: query Orders for authenticated user",
+            "FAQ intent: load active FAQs, pass as Groq system context",
+            "Rate limit: 20 req/min per IP (done)",
+            "Structured response: { success, type, message, photographers?, bookings?, timeline?, cart? }"
+          ],
+          "acceptance_criteria": [
+            "Natural language photographer query returns real DB results as cards",
+            "Order status query returns correct data for authenticated user",
+            "Groq API errors handled with fallback message"
+          ]
+        },
+        {
+          "id": "T08.03",
+          "title": "NLP Parameter Extraction",
+          "description": "Extract structured params (city, budget, eventType, date) from natural language",
+          "priority": "high",
+          "status": "in-progress",
+          "type": "ai",
+          "file": "backend/controllers/chatbotController.js",
+          "subtasks": [
+            "First Groq call: extract JSON {city, maxBudget, eventType, date} from user message",
+            "Fallback regex patterns for Pakistani cities (Lahore, Karachi, Islamabad, Rawalpindi, etc.)",
+            "Handle Roman Urdu: 'lahore mein', 'karachi se', 'islamabad ka'",
+            "Map eventType aliases: 'shadi' -> 'wedding', 'nikah' -> 'wedding', 'product shoot' -> 'product'",
+            "Validate extracted params before building MongoDB query (prevent injection)"
+          ],
+          "acceptance_criteria": [
+            "Query 'lahore mein shadi 15k' extracts city=Lahore, eventType=wedding, maxBudget=15000",
+            "Unknown city falls back to nationwide search",
+            "Extracted params sanitized before DB query (no operator injection)"
+          ]
+        },
+        {
+          "id": "T08.04",
+          "title": "AI Automated Support — FAQ Integration",
+          "description": "Use DB FAQs as context for Groq to answer policy questions",
+          "priority": "medium",
+          "status": "in-progress",
+          "type": "ai",
+          "file": "backend/controllers/chatbotController.js",
+          "subtasks": [
+            "Fetch active FAQs from DB on server start (cache in memory, refresh every 10 min)",
+            "Inject FAQ content into Groq system prompt for FAQ-type intents",
+            "Handle: refund policy, cancellation policy, how to book, payment methods",
+            "Do not hallucinate — instruct Groq to only use provided FAQ context for policies"
+          ],
+          "acceptance_criteria": [
+            "Refund policy answer matches admin FAQ content exactly",
+            "Chatbot does not invent policies",
+            "FAQ cache refreshes when admin updates FAQs"
+          ]
+        },
+        {
+          "id": "T08.05",
+          "title": "Chatbot Edge Case Handling",
+          "description": "Graceful degradation for all failure scenarios",
+          "priority": "medium",
+          "status": "pending",
+          "type": "ai",
+          "subtasks": [
+            "No photographers found matching filters: 'I couldn't find photographers for those filters. Try a wider budget or different city.'",
+            "Groq API timeout (> 5s): 'I'm a bit slow right now, please try again in a moment.'",
+            "Unauthenticated order query: 'Please log in to check your order status.'",
+            "Rate limit hit (429): 'You're sending messages too fast! Please wait a minute.'",
+            "Empty message: 'What can I help you with today?'",
+            "Groq returns empty response: default fallback general greeting"
+          ],
+          "acceptance_criteria": [
+            "Zero unhandled exceptions visible to user",
+            "All edge cases show meaningful, user-friendly messages"
+          ]
+        },
+        {
+          "id": "T08.06",
+          "title": "Chatbot — Analytics Event Tracking",
+          "description": "Track chatbot interactions as analytic events in DB",
+          "priority": "low",
+          "status": "pending",
+          "type": "ai",
+          "subtasks": [
+            "Log Analytic event for each chatbot query: action='chatbot_query', photographerId (if photographer search)",
+            "Track which intents are most used",
+            "Show chatbot usage in admin analytics"
+          ],
+          "acceptance_criteria": [
+            "Chatbot queries appear in admin analytics data",
+            "Analytic events linked to userId if authenticated"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "M09",
+      "name": "Database — Models & Indexes",
+      "description": "MongoDB schemas and query-performance indexes",
+      "tasks": [
+        {
+          "id": "T09.01",
+          "title": "User Schema + Indexes",
+          "description": "email (unique), role index added",
+          "priority": "critical",
+          "status": "completed",
+          "type": "database",
+          "file": "backend/models/user.js",
+          "subtasks": [
+            "userSchema.index({ email: 1 }, { unique: true })",
+            "userSchema.index({ role: 1 })"
+          ],
+          "acceptance_criteria": [
+            "email index is unique",
+            "role index exists in Atlas UI"
+          ]
+        },
+        {
+          "id": "T09.02",
+          "title": "PhotographerProfile Schema + Indexes",
+          "description": "7 indexes including compound index for listing page query",
+          "priority": "critical",
+          "status": "completed",
+          "type": "database",
+          "file": "backend/models/photographerProfile.js",
+          "subtasks": [
+            "userId unique index",
+            "city, eventTypes, rating, pricePerHour, isPublished individual indexes",
+            "Compound: { isPublished: 1, rating: -1, city: 1 } for listing page query"
+          ],
+          "acceptance_criteria": [
+            "7 indexes confirmed in Atlas",
+            "Compound index covers listing page query pattern"
+          ]
+        },
+        {
+          "id": "T09.03",
+          "title": "Order Schema + Indexes",
+          "description": "Indexes for status, customerId, photographerId, eventDate",
+          "priority": "critical",
+          "status": "completed",
+          "type": "database",
+          "file": "backend/models/order.js",
+          "subtasks": [
+            "status: 1 index",
+            "{ customerId: 1, status: 1 } compound",
+            "{ photographerId: 1, status: 1 } compound",
+            "eventDate: 1 index"
+          ],
+          "acceptance_criteria": [
+            "4 indexes confirm in Atlas",
+            "Double-booking query uses index (photographerId + eventDate)"
+          ]
+        },
+        {
+          "id": "T09.04",
+          "title": "Review Schema + Indexes",
+          "description": "photographerId, customerId indexes and unique compound for anti-duplicate",
+          "priority": "high",
+          "status": "in-progress",
+          "type": "database",
+          "file": "backend/models/review.js",
+          "subtasks": [
+            "photographerId: 1 field-level index (done)",
+            "customerId: 1 field-level index (done)",
+            "reviewSchema.index({ bookingId: 1, customerId: 1 }, { unique: true }) — prevent duplicate reviews"
+          ],
+          "acceptance_criteria": [
+            "Duplicate review on same order rejected at DB level with E11000",
+            "3 indexes confirmed in Atlas"
+          ]
+        },
+        {
+          "id": "T09.05",
+          "title": "Analytic Schema + Indexes",
+          "description": "Already fully indexed — verified, no changes needed",
+          "priority": "medium",
+          "status": "completed",
+          "type": "database",
+          "file": "backend/models/analytic.js",
+          "subtasks": [
+            "Confirmed: photographerId, action, timestamp, (photographerId,timestamp), (action,timestamp) compound indexes"
+          ],
+          "acceptance_criteria": [
+            "All 5 indexes present in Atlas"
+          ]
+        },
+        {
+          "id": "T09.06",
+          "title": "Availability Schema",
+          "description": "Per-photographer per-day availability with slot booking",
+          "priority": "critical",
+          "status": "in-progress",
+          "type": "database",
+          "file": "backend/models/availability.js",
+          "subtasks": [
+            "Fields: photographerId (ref User), date (Date), isFullDayUnavailable (Boolean), slots: [{startTime, endTime, isBooked, orderId}]",
+            "Compound unique index: { photographerId: 1, date: 1 }",
+            "Ensure slot booking is atomic using findOneAndUpdate with $ operators"
+          ],
+          "acceptance_criteria": [
+            "Only one document per photographer per day (unique index enforces this)",
+            "Slot booking atomic — no race condition on concurrent requests"
+          ]
+        },
+        {
+          "id": "T09.07",
+          "title": "Package Schema",
+          "description": "Photographer service packages model",
+          "priority": "high",
+          "status": "in-progress",
+          "type": "database",
+          "file": "backend/models/package.js",
+          "subtasks": [
+            "Fields: photographerId (ref PhotographerProfile), name (String), description (String), price (Number, min:0), durationHours (Number), features ([String]), isActive (Boolean, default:true)",
+            "Index: { photographerId: 1 }"
+          ],
+          "acceptance_criteria": [
+            "Package linked to photographer",
+            "price validated as positive number at schema level"
+          ]
+        },
+        {
+          "id": "T09.08",
+          "title": "Commission Schema",
+          "description": "Track platform commission per completed order",
+          "priority": "medium",
+          "status": "in-progress",
+          "type": "database",
+          "file": "backend/models/commission.js",
+          "subtasks": [
+            "Fields: orderId (ref Order, unique), photographerId (ref User), grossAmount, commissionRate (Number), commissionAmount, netAmount, status ('pending'|'paid'), paidAt (Date)",
+            "Index: { photographerId: 1, status: 1 }",
+            "Auto-create commission document via post-save hook on Order when status -> 'completed'"
+          ],
+          "acceptance_criteria": [
+            "Commission auto-created whenever order status changes to 'completed'",
+            "commissionRate stored at booking time (historical record)",
+            "unique orderId index prevents duplicate commissions"
+          ]
+        },
+        {
+          "id": "T09.09",
+          "title": "Dispute Schema",
+          "description": "Track disputes between customers and photographers",
+          "priority": "medium",
+          "status": "in-progress",
+          "type": "database",
+          "file": "backend/models/dispute.js",
+          "subtasks": [
+            "Fields: orderId (ref Order), reportedBy (ref User), againstUserId (ref User), reason (String), description (String, max:2000), status ('open'|'under_review'|'resolved'), resolution (String), resolvedBy (ref User), resolvedAt (Date)",
+            "Index: { status: 1, createdAt: -1 }"
+          ],
+          "acceptance_criteria": [
+            "Dispute linked to specific order",
+            "Resolution includes admin user reference and timestamp"
+          ]
+        },
+        {
+          "id": "T09.10",
+          "title": "OrderTimeline Schema",
+          "description": "Append-only audit log of order status changes",
+          "priority": "medium",
+          "status": "completed",
+          "type": "database",
+          "file": "backend/models/orderTimeline.js",
+          "subtasks": [
+            "Fields: orderId (ref Order), status (String), note (String), changedBy (ref User), timestamp (Date, default:now)",
+            "Index: { orderId: 1, timestamp: 1 }"
+          ],
+          "acceptance_criteria": [
+            "Timeline entry added on every Order status change",
+            "Chatbot can render timeline from GET /api/orders/:id/timeline"
+          ]
+        },
+        {
+          "id": "T09.11",
+          "title": "Portfolio Schema",
+          "description": "photographer portfolio images model",
+          "priority": "high",
+          "status": "in-progress",
+          "type": "database",
+          "file": "backend/models/portfolio.js",
+          "subtasks": [
+            "Fields: photographerId (ref User), imageUrl (String), caption (String optional), sortOrder (Number, default:0)",
+            "Index: { photographerId: 1, sortOrder: 1 }"
+          ],
+          "acceptance_criteria": [
+            "Images linked to photographer",
+            "sortOrder enables reordering gallery"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "M10",
+      "name": "Payment System",
+      "description": "Manual payment flow + dummy credit card UI (no real gateway)",
+      "tasks": [
+        {
+          "id": "T10.01",
+          "title": "Payment Page UI (payment.html)",
+          "description": "Dedicated payment page with dummy card form and manual bank transfer option",
+          "priority": "high",
+          "status": "pending",
+          "type": "frontend",
+          "file": "frontend/public/payment.html",
+          "subtasks": [
+            "Create payment.html with Creative Sketchbook design system",
+            "Order summary section: items list, subtotal, coupon discount, total",
+            "Tab switcher: 'Pay by Card' / 'Manual Bank Transfer'",
+            "Card tab: number input (live 4x4 formatting), cardholder name, expiry MM/YY, CVV (show/hide icon)",
+            "Card client-side validation: 16-digit number, expiry not in past, CVV 3-4 digits",
+            "Manual tab: show bank account details, file upload for payment proof",
+            "Submit: POST /api/payments with { orderId, method, last4 (card only) }",
+            "Redirect to /order-confirmation.html?orderId=... on success"
+          ],
+          "acceptance_criteria": [
+            "Card number formats automatically with spaces",
+            "Past expiry date blocked before API call",
+            "No full card number sent to or stored in backend",
+            "Successful submission clears cart and redirects to confirmation"
+          ]
+        },
+        {
+          "id": "T10.02",
+          "title": "Payment Model & API",
+          "description": "Record payment, update order paymentStatus",
+          "priority": "high",
+          "status": "pending",
+          "type": "backend",
+          "subtasks": [
+            "Payment schema: orderId (ref Order, unique), userId, amount, method ('card'|'manual'), last4 (String, 4 chars max), status ('pending'|'confirmed'), confirmedAt",
+            "POST /api/payments: create Payment, for 'card' set Order.paymentStatus='paid', for 'manual' keep 'pending'",
+            "PATCH /api/admin/payments/:id/confirm: admin confirms manual payment (status='confirmed', Order.paymentStatus='paid')",
+            "Index: { orderId: 1 } unique, { status: 1 }"
+          ],
+          "acceptance_criteria": [
+            "Full card number never stored — only last 4 digits accepted",
+            "Card payment immediately marks Order as paid",
+            "Manual payment awaits admin confirmation",
+            "Duplicate payment for same order rejected by unique index"
+          ]
+        },
+        {
+          "id": "T10.03",
+          "title": "Order Confirmation Page",
+          "description": "order-confirmation.html: show order details post-payment",
+          "priority": "medium",
+          "status": "pending",
+          "type": "frontend",
+          "file": "frontend/public/order-confirmation.html",
+          "subtasks": [
+            "Read orderId from URL ?orderId= param",
+            "Fetch GET /api/orders/:orderId and render details",
+            "Success checkmark animation (CSS)",
+            "For manual payment: show 'Payment pending confirmation' message",
+            "CTA: View All Orders | Browse More Photographers"
+          ],
+          "acceptance_criteria": [
+            "Order details displayed correctly",
+            "Manual payment shows pending state clearly",
+            "Card payment shows confirmed state"
+          ]
+        },
+        {
+          "id": "T10.04",
+          "title": "Admin Manual Payment Confirmation",
+          "description": "Admin reviews and confirms manual bank transfer payments",
+          "priority": "medium",
+          "status": "pending",
+          "type": "backend",
+          "subtasks": [
+            "GET /api/admin/payments?status=pending — list unconfirmed manual payments",
+            "PATCH /api/admin/payments/:id/confirm — set Payment.status='confirmed', Order.paymentStatus='paid'",
+            "Add Payments tab or section in admin dashboard"
+          ],
+          "acceptance_criteria": [
+            "Admin can see list of pending manual payments",
+            "Confirming updates both Payment and Order records"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "M11",
+      "name": "Security Hardening",
+      "description": "OWASP Top 10 mitigations and platform security best practices",
+      "tasks": [
+        {
+          "id": "T11.01",
+          "title": "Helmet.js — HTTP Security Headers",
+          "description": "Add helmet middleware to set secure HTTP headers on all responses",
+          "priority": "critical",
+          "status": "pending",
+          "type": "security",
+          "file": "backend/server.js",
+          "subtasks": [
+            "npm install helmet",
+            "app.use(helmet()) before all route declarations",
+            "Configure Content-Security-Policy: allow CDN sources (React, Chart.js, Google Fonts, socket.io CDN)",
+            "Verify X-Frame-Options: SAMEORIGIN",
+            "Verify Strict-Transport-Security in production"
+          ],
+          "acceptance_criteria": [
+            "Security headers present in all API and static file responses",
+            "CDN resources (React, Chart.js) not blocked by CSP",
+            "Helmet does not break existing frontend functionality"
+          ]
+        },
+        {
+          "id": "T11.02",
+          "title": "CORS Restriction — Production Origin Whitelist",
+          "description": "Restrict CORS to known frontend origin in production environment",
+          "priority": "high",
+          "status": "pending",
+          "type": "security",
+          "file": "backend/server.js",
+          "subtasks": [
+            "Add FRONTEND_URL to .env (e.g. https://snapbook.netlify.app)",
+            "app.use(cors({ origin: process.env.FRONTEND_URL || '*', credentials: true }))",
+            "In production (NODE_ENV=production): reject requests from unknown origins"
+          ],
+          "acceptance_criteria": [
+            "In production, API requests from other origins return 403",
+            "Development keeps wildcard CORS for ease"
+          ]
+        },
+        {
+          "id": "T11.03",
+          "title": "MongoDB Injection Prevention (express-mongo-sanitize)",
+          "description": "Strip $ and . operators from request body and query params",
+          "priority": "critical",
+          "status": "pending",
+          "type": "security",
+          "file": "backend/server.js",
+          "subtasks": [
+            "npm install express-mongo-sanitize",
+            "app.use(mongoSanitize()) immediately after app.use(express.json())",
+            "Verify: { email: { $ne: null } } in body is stripped to {}"
+          ],
+          "acceptance_criteria": [
+            "NoSQL injection via $where or $ne stripped before reaching controllers",
+            "Legitimate requests pass through unmodified"
+          ]
+        },
+        {
+          "id": "T11.04",
+          "title": "Input Validation on All Write Endpoints",
+          "description": "Extend express-validator to all POST/PUT/PATCH endpoints",
+          "priority": "high",
+          "status": "pending",
+          "type": "security",
+          "subtasks": [
+            "Create backend/middleware/validators.js with reusable validation rule sets",
+            "POST /api/orders: eventDate must be future, eventType enum, duration 1-24, location non-empty",
+            "POST /api/reviews: rating isInt {min:1, max:5}, comment isLength {max:1000}",
+            "POST /api/disputes: reason non-empty, description isLength {max:2000}",
+            "POST /api/coupon: code isAlphanumeric, value isFloat {min:0}, expiryDate isISO8601 and future",
+            "POST /api/availability: date isISO8601",
+            "Apply consistently: router.post('/route', validators.ruleSet, controller.handler)"
+          ],
+          "acceptance_criteria": [
+            "All endpoints return 400 with errors array on invalid input",
+            "Past eventDate rejected on order creation",
+            "Rating > 5 rejected on review submission"
+          ]
+        },
+        {
+          "id": "T11.05",
+          "title": "File Upload Security — MIME Type Validation",
+          "description": "Validate file type from buffer (not extension) for portfolio uploads",
+          "priority": "high",
+          "status": "pending",
+          "type": "security",
+          "subtasks": [
+            "npm install file-type",
+            "In multer fileFilter: read first bytes, check real MIME type",
+            "Only allow: image/jpeg, image/png, image/webp",
+            "Limit: 5MB max per file (multer limits.fileSize)",
+            "Use uuid v4 as filename to prevent path traversal"
+          ],
+          "acceptance_criteria": [
+            "Malicious file renamed to .jpg is rejected at buffer level",
+            "File > 5MB rejected with 413",
+            "No user-controlled characters in stored filename"
+          ]
+        },
+        {
+          "id": "T11.06",
+          "title": "Rate Limiting — Auth Endpoints (Brute Force Protection)",
+          "description": "Prevent brute-force attacks on login and register",
+          "priority": "high",
+          "status": "pending",
+          "type": "security",
+          "file": "backend/server.js",
+          "subtasks": [
+            "POST /api/auth/login: rateLimit({ windowMs: 15*60*1000, max: 10 }) — 10 attempts/15min per IP",
+            "POST /api/auth/register: rateLimit({ windowMs: 60*60*1000, max: 5 }) — 5 registrations/hour per IP",
+            "Both limiters return 429 with Retry-After header"
+          ],
+          "acceptance_criteria": [
+            "11th login attempt in 15 min returns 429",
+            "Retry-After header present",
+            "Chatbot limiter (20/min) already done — verify not affected"
+          ]
+        },
+        {
+          "id": "T11.07",
+          "title": "Strengthen JWT Secret",
+          "description": "Replace weak JWT_SECRET with cryptographically random 64-byte value",
+          "priority": "critical",
+          "status": "pending",
+          "type": "security",
+          "file": "backend/.env",
+          "subtasks": [
+            "Generate: node -e \"console.log(require('crypto').randomBytes(64).toString('hex'))\"",
+            "Replace current 'supersecretjwtkey123' in .env",
+            "Add .env to .gitignore immediately",
+            "Create .env.example with placeholder values",
+            "Note: all existing tokens invalidated — users must re-login"
+          ],
+          "acceptance_criteria": [
+            "JWT_SECRET is 128 hex characters (64 random bytes)",
+            ".env not tracked in git",
+            ".env.example committed instead"
+          ]
+        },
+        {
+          "id": "T11.08",
+          "title": "XSS Prevention Audit",
+          "description": "Ensure all user-generated content is properly escaped before rendering",
+          "priority": "high",
+          "status": "in-progress",
+          "type": "security",
+          "subtasks": [
+            "Chatbot: esc() function used for all message/name rendering (done)",
+            "React dashboards: JSX interpolation auto-escapes (done)",
+            "Non-React pages (index.html, photographer-profile.html): audit all .innerHTML usage",
+            "Replace .innerHTML with .textContent or DOMParser for user-sourced strings",
+            "Review comments: ensure escaped before display in HTML context"
+          ],
+          "acceptance_criteria": [
+            "<script>alert(1)</script> in review comment renders as literal text in all pages",
+            "No dangerousSetInnerHTML in React pages with user data"
+          ]
+        },
+        {
+          "id": "T11.09",
+          "title": "Production .gitignore Setup",
+          "description": "Ensure sensitive files and large folders are not committed",
+          "priority": "critical",
+          "status": "pending",
+          "type": "security",
+          "subtasks": [
+            "Add backend/.env to .gitignore",
+            "Add backend/uploads/ to .gitignore",
+            "Add node_modules/ to .gitignore (both backend and root)",
+            "Add .DS_Store, *.log to .gitignore",
+            "Verify: git status shows no .env files tracked"
+          ],
+          "acceptance_criteria": [
+            "git status shows .env as untracked/ignored",
+            "npm install works from scratch using package.json only"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "M12",
+      "name": "Performance Optimization",
+      "description": "Frontend and backend performance improvements for sub-3s page loads",
+      "tasks": [
+        {
+          "id": "T12.01",
+          "title": "Image Lazy Loading",
+          "description": "Add loading='lazy' and dimensions to all img elements",
+          "priority": "high",
+          "status": "pending",
+          "type": "performance",
+          "subtasks": [
+            "Add loading='lazy' to all photographer card photos in react-app.js",
+            "Add loading='lazy' to all portfolio grid images",
+            "Add explicit width and height attributes to prevent CLS (Cumulative Layout Shift)",
+            "Use aspect-ratio CSS property on image containers"
+          ],
+          "acceptance_criteria": [
+            "Images below the fold load on scroll, not on page load",
+            "No layout shift when images load (CLS score < 0.1)"
+          ]
+        },
+        {
+          "id": "T12.02",
+          "title": "Response Compression (gzip)",
+          "description": "Compress all API and static file responses",
+          "priority": "medium",
+          "status": "pending",
+          "type": "performance",
+          "file": "backend/server.js",
+          "subtasks": [
+            "npm install compression",
+            "app.use(compression()) before routes in server.js",
+            "Verify Content-Encoding: gzip in response headers"
+          ],
+          "acceptance_criteria": [
+            "API JSON responses gzip compressed",
+            "HTML/JS/CSS static files compressed",
+            "Response size reduced by 60-80%"
+          ]
+        },
+        {
+          "id": "T12.03",
+          "title": "Ensure All List Endpoints Are Paginated",
+          "description": "Audit all GET endpoints returning arrays — enforce max 100 results",
+          "priority": "critical",
+          "status": "in-progress",
+          "type": "performance",
+          "subtasks": [
+            "GET /api/photographers: paginated (done)",
+            "GET /api/orders: paginated (done)",
+            "GET /api/admin/photographers: paginated (done)",
+            "GET /api/admin/users: add pagination (pending — T07.02)",
+            "GET /api/disputes: verify or add pagination",
+            "GET /api/commission: verify or add pagination",
+            "GET /api/reviews/:photographerId: verify or add pagination",
+            "GET /api/analytics/events: add ?limit (default 100, max 500)"
+          ],
+          "acceptance_criteria": [
+            "No single endpoint returns > 100 documents in one response",
+            "All list endpoints accept ?page and ?limit query params"
+          ]
+        },
+        {
+          "id": "T12.04",
+          "title": "Photographer List API Caching",
+          "description": "Cache GET /api/photographers responses by query string for 60 seconds",
+          "priority": "medium",
+          "status": "pending",
+          "type": "performance",
+          "subtasks": [
+            "Use node-cache (npm install node-cache) with TTL=60",
+            "Cache key = MD5 or JSON.stringify of query object",
+            "Bust cache when PhotographerProfile updated or approved/suspended",
+            "Add X-Cache: HIT/MISS response header for debugging"
+          ],
+          "acceptance_criteria": [
+            "Second identical request served from cache (verified by X-Cache: HIT)",
+            "Cache busted when photographer data changes"
+          ]
+        },
+        {
+          "id": "T12.05",
+          "title": "WebP Image Conversion on Upload",
+          "description": "Convert uploaded portfolio images to WebP format using sharp",
+          "priority": "low",
+          "status": "pending",
+          "type": "performance",
+          "subtasks": [
+            "npm install sharp",
+            "After multer saves file: sharp(originalPath).webp({ quality: 80 }).toFile(webpPath)",
+            "Delete original non-WebP file after conversion",
+            "Store WebP path in Portfolio model"
+          ],
+          "acceptance_criteria": [
+            "All portfolio images served as .webp",
+            "File size reduced by ~30-50% vs original JPEG"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "M13",
+      "name": "Real-Time Features (Socket.io)",
+      "description": "Live notifications for booking status changes and disputes",
+      "tasks": [
+        {
+          "id": "T13.01",
+          "title": "Socket.io Authenticated Room Management",
+          "description": "Each user joins their private room (userId) on socket connect; verify JWT on connect",
+          "priority": "high",
+          "status": "pending",
+          "type": "backend",
+          "file": "backend/server.js",
+          "subtasks": [
+            "Client sends JWT in socket handshake auth: io({ auth: { token } })",
+            "Server-side: verify JWT in io.use() middleware before connection",
+            "socket.join(userId) to private room on successful auth",
+            "Reject unauthenticated socket connections with disconnect error",
+            "Emit targeted events: io.to(userId).emit('event', data)"
+          ],
+          "acceptance_criteria": [
+            "Socket notification only received by intended user",
+            "Unauthenticated socket connections rejected immediately"
+          ]
+        },
+        {
+          "id": "T13.02",
+          "title": "Real-Time Notifications — Frontend",
+          "description": "Connect socket.io client on dashboards and show toast notifications",
+          "priority": "medium",
+          "status": "pending",
+          "type": "frontend",
+          "subtasks": [
+            "Include socket.io client CDN in customer and photographer dashboard HTML",
+            "Connect with: io({ auth: { token: localStorage.getItem('token') } })",
+            "Customer listens for: booking_accepted, booking_declined, dispute_resolved",
+            "Photographer listens for: new_booking, booking_cancelled",
+            "Show toast notification (slide-in from top-right, auto-dismiss 5s)",
+            "Update order list in place when booking status changes (no full reload)"
+          ],
+          "acceptance_criteria": [
+            "Customer gets live toast when photographer accepts booking",
+            "Photographer gets live toast when new booking arrives",
+            "Toast includes action button (e.g., 'View Order')"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "M14",
+      "name": "Bug Fixes & Known Issues",
+      "description": "All currently identified bugs that must be resolved before launch",
+      "tasks": [
+        {
+          "id": "T14.01",
+          "title": "BUG: Admin Users Tab Has No Backend Endpoint",
+          "description": "GET /api/admin/users not implemented; admin Users tab returns empty/error",
+          "priority": "high",
+          "status": "pending",
+          "type": "backend",
+          "related": ["T07.02", "T06.02"],
+          "subtasks": [
+            "Implement GET /api/admin/users in adminController.js",
+            "Register route in adminRoutes.js",
+            "Update admin dashboard Users tab fetch URL"
+          ],
+          "acceptance_criteria": [
+            "Admin can see paginated customer list",
+            "No console error on Users tab open"
+          ]
+        },
+        {
+          "id": "T14.02",
+          "title": "BUG: Commission 'Mark Paid' Button Has No Backend",
+          "description": "Admin commission Mark Paid button is UI-only — no PATCH endpoint exists",
+          "priority": "medium",
+          "status": "pending",
+          "type": "backend",
+          "related": ["T07.07", "T06.03"],
+          "subtasks": [
+            "Implement PATCH /api/commission/:id/pay",
+            "Wire the admin dashboard button to call this endpoint",
+            "Verify paid status persists on dashboard reload"
+          ],
+          "acceptance_criteria": [
+            "Mark Paid persists after page reload",
+            "Paid commissions excluded from pending totals"
+          ]
+        },
+        {
+          "id": "T14.03",
+          "title": "BUG: Blocked Users Can Still Authenticate with Valid Token",
+          "description": "isActive=false not checked in auth middleware — blocked users can still call APIs",
+          "priority": "critical",
+          "status": "completed",
+          "type": "security",
+          "related": ["T01.06"],
+          "subtasks": [
+            "Fetch user from DB in protect middleware after JWT verification",
+            "Return 403 if user.isActive === false",
+            "Test: block user, then call protected endpoint with their existing token"
+          ],
+          "acceptance_criteria": [
+            "Blocked user immediately gets 403 on next API call",
+            "Previously issued tokens are invalidated by block status"
+          ]
+        },
+        {
+          "id": "T14.04",
+          "title": "BUG: Photographer Rating Not Recalculated After Review",
+          "description": "Submitting a review does not update PhotographerProfile.rating average",
+          "priority": "high",
+          "status": "pending",
+          "type": "backend",
+          "related": ["T03.06"],
+          "subtasks": [
+            "After Review.create(), run MongoDB aggregation: $avg of rating for photographerId",
+            "Update PhotographerProfile: { rating: avgRating, totalReviews: count }",
+            "Test: submit 3 reviews with ratings 4, 5, 3 — profile should show rating=4.0"
+          ],
+          "acceptance_criteria": [
+            "Profile rating updates immediately after review submission",
+            "Average is mathematically correct to 1 decimal place"
+          ]
+        },
+        {
+          "id": "T14.05",
+          "title": "BUG: Double Booking Not Prevented",
+          "description": "No conflict check before order creation — same photographer can be double-booked",
+          "priority": "critical",
+          "status": "pending",
+          "type": "backend",
+          "related": ["T05.04"],
+          "subtasks": [
+            "In orderController.createOrder: check Order.findOne({ photographerId, eventDate, status: { $nin: ['cancelled'] } })",
+            "Return 409 with message 'Photographer already booked on this date'",
+            "Add to chatbot: handle 'is [photographer] available on [date]' queries"
+          ],
+          "acceptance_criteria": [
+            "Second booking for same photographer+date returns 409",
+            "First booking proceeds without change"
+          ]
+        },
+        {
+          "id": "T14.06",
+          "title": "BUG: Weak JWT Secret in .env",
+          "description": "Current JWT_SECRET is 'supersecretjwtkey123' — guessable and insecure",
+          "priority": "critical",
+          "status": "pending",
+          "type": "security",
+          "related": ["T11.07"],
+          "subtasks": [
+            "node -e \"console.log(require('crypto').randomBytes(64).toString('hex'))\"",
+            "Update JWT_SECRET in .env with generated value",
+            "Add .env to .gitignore before any git operations",
+            "Note: all current user sessions will be invalidated"
+          ],
+          "acceptance_criteria": [
+            "JWT_SECRET is 128 hex characters minimum",
+            ".env is in .gitignore and not staged"
+          ]
+        },
+        {
+          "id": "T14.07",
+          "title": "BUG: Cart Not Cleared if Order Creation Partially Fails",
+          "description": "If creating orders for multiple cart items fails mid-loop, cart is partially cleared",
+          "priority": "high",
+          "status": "pending",
+          "type": "backend",
+          "file": "backend/controllers/orderController.js",
+          "subtasks": [
+            "Collect all created orders first; only clear cart after all succeed",
+            "Wrap loop in try/catch; if any item fails, rollback by deleting created orders",
+            "Return 207 Multi-Status with success/failure per item if partial failure is acceptable"
+          ],
+          "acceptance_criteria": [
+            "All cart items succeed: cart cleared, all orders created",
+            "Any item fails: no orders created (rollback), cart preserved, 400 returned"
+          ]
+        },
+        {
+          "id": "T14.08",
+          "title": "BUG: No Price Range Filter in GET /api/photographers",
+          "description": "priceMin and priceMax filters not implemented despite being in UI",
+          "priority": "medium",
+          "status": "pending",
+          "type": "backend",
+          "file": "backend/controllers/photographerController.js",
+          "subtasks": [
+            "Parse ?priceMin and ?priceMax from query",
+            "Add to filter: if priceMin: { pricePerHour: { $gte: priceMin } }, if priceMax: { pricePerHour: { $lte: priceMax } }",
+            "Validate: priceMin and priceMax must be positive numbers"
+          ],
+          "acceptance_criteria": [
+            "?priceMin=5000&priceMax=20000 returns only photographers in that range",
+            "Invalid values (negative, non-numeric) return 400"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "M15",
+      "name": "Testing & QA",
+      "description": "Manual end-to-end test checklists for all major flows",
+      "tasks": [
+        {
+          "id": "T15.01",
+          "title": "Auth Flow — Complete Test Matrix",
+          "description": "Test all authentication and authorization scenarios",
+          "priority": "critical",
+          "status": "pending",
+          "type": "testing",
+          "subtasks": [
+            "Register new customer -> verify 201 with token",
+            "Register with invalid email -> verify 400 with errors array",
+            "Register with password < 6 chars -> verify 400",
+            "Register with role='admin' -> verify 400 (blocked)",
+            "Register photographer -> verify isApproved=false",
+            "Photographer login before admin approval -> verify 403",
+            "Admin approves photographer -> photographer login succeeds",
+            "Wrong password login -> verify 400",
+            "Customer hits /api/admin route -> verify 403",
+            "Admin blocks user -> verify blocked user gets 403 with valid token"
+          ],
+          "acceptance_criteria": [
+            "All 10 scenarios behave exactly as specified"
+          ]
+        },
+        {
+          "id": "T15.02",
+          "title": "Booking Flow — Happy Path End-to-End",
+          "description": "Complete booking lifecycle from search to completed review",
+          "priority": "critical",
+          "status": "pending",
+          "type": "testing",
+          "subtasks": [
+            "Search photographer with city + eventType filters",
+            "View photographer profile via slug",
+            "Add photographer to cart with event details",
+            "Apply valid coupon code",
+            "Proceed to payment page — enter dummy card",
+            "Submit payment -> verify Order created, Cart cleared",
+            "Photographer logs in, sees new booking, clicks Accept",
+            "Customer gets Socket.io notification",
+            "Admin marks order as completed",
+            "Customer leaves 4-star review",
+            "Verify PhotographerProfile.rating updated"
+          ],
+          "acceptance_criteria": [
+            "Complete happy path works without any errors or redirects",
+            "Each step transitions to next correctly"
+          ]
+        },
+        {
+          "id": "T15.03",
+          "title": "Double Booking Prevention Test",
+          "description": "Verify photographer cannot be booked twice for the same date",
+          "priority": "critical",
+          "status": "pending",
+          "type": "testing",
+          "subtasks": [
+            "Book photographer A for 2026-07-10",
+            "As a different customer: attempt booking photographer A for 2026-07-10",
+            "Verify 409 response with 'already booked' message",
+            "Verify different date for same photographer succeeds (200)",
+            "Cancel first booking -> verify same date is now bookable again (200)"
+          ],
+          "acceptance_criteria": [
+            "Second booking returns 409",
+            "After cancellation, slot is rebookable"
+          ]
+        },
+        {
+          "id": "T15.04",
+          "title": "AI Chatbot Test Matrix",
+          "description": "Test chatbot with all intent types and edge cases",
+          "priority": "high",
+          "status": "pending",
+          "type": "testing",
+          "subtasks": [
+            "'Find wedding photographer in Lahore under 20k' -> photographer cards rendered",
+            "'Mujhe kal Karachi mein portrait photographer chahiye' -> photographer cards",
+            "'What is my order status?' (logged in) -> order list rendered",
+            "'What is my order status?' (not logged in) -> prompt to login",
+            "'What is your refund policy?' -> FAQ-based answer",
+            "'Hello' -> general greeting",
+            "21 requests in 1 minute -> 429 on 21st with friendly message",
+            "'<script>alert(1)</script>' as message -> escaped in output, no XSS"
+          ],
+          "acceptance_criteria": [
+            "All 8 scenarios return expected response type and format"
+          ]
+        },
+        {
+          "id": "T15.05",
+          "title": "Security Penetration Test Checklist",
+          "description": "Manually test all OWASP mitigations",
+          "priority": "high",
+          "status": "pending",
+          "type": "testing",
+          "subtasks": [
+            "POST /api/auth/register body: { email: { $ne: null } } -> verify field sanitized",
+            "POST /api/auth/register name: '<img src=x onerror=alert(1)>' -> verify escaped in response",
+            "Upload file: rename shell.php to shell.jpg -> verify 400 (MIME check)",
+            "Upload file: 6MB image -> verify 413 or 400",
+            "GET /api/orders without token -> verify 401",
+            "GET /api/admin/photographers as customer -> verify 403",
+            "POST /api/orders with eventDate='2020-01-01' (past) -> verify 400",
+            "POST /api/reviews with rating=10 -> verify 400",
+            "11th login attempt in 1 minute -> verify 429 with Retry-After"
+          ],
+          "acceptance_criteria": [
+            "All 9 attack vectors blocked with correct status codes"
+          ]
+        },
+        {
+          "id": "T15.06",
+          "title": "Pagination Correctness Test",
+          "description": "Verify all paginated endpoints return correct data and metadata",
+          "priority": "medium",
+          "status": "pending",
+          "type": "testing",
+          "subtasks": [
+            "GET /api/photographers?page=1&limit=3 -> verify 3 results + total in meta",
+            "GET /api/photographers?page=2&limit=3 -> verify next 3 unique results",
+            "GET /api/orders?page=1&limit=2 -> verify 2 results + pagination meta",
+            "GET /api/admin/photographers?page=1&limit=5 -> verify 5 results + correct total",
+            "GET /api/photographers?page=9999 -> verify empty array not error"
+          ],
+          "acceptance_criteria": [
+            "Page counts and result counts match DB counts exactly",
+            "Out-of-range page returns empty array (not error)"
+          ]
+        },
+        {
+          "id": "T15.07",
+          "title": "Admin Operations Test",
+          "description": "Test all admin dashboard CRUD operations",
+          "priority": "high",
+          "status": "pending",
+          "type": "testing",
+          "subtasks": [
+            "Login as admin -> dashboard loads with correct stats",
+            "Approve photographer -> isApproved=true, photographer can now login",
+            "Reject photographer -> isApproved=false",
+            "Suspend photographer -> photographer hidden from public GET /api/photographers",
+            "Reinstate photographer -> photographer visible again",
+            "Create FAQ -> appears on GET /api/faq without auth",
+            "Create coupon -> POST /api/coupon/apply with correct code returns discount",
+            "Resolve dispute -> status='resolved' persists"
+          ],
+          "acceptance_criteria": [
+            "All 8 admin operations execute without errors",
+            "All state changes persist after dashboard reload"
+          ]
+        },
+        {
+          "id": "T15.08",
+          "title": "Real-Time Notifications Test",
+          "description": "Verify Socket.io notifications delivered to correct users",
+          "priority": "medium",
+          "status": "pending",
+          "type": "testing",
+          "subtasks": [
+            "Open customer dashboard in browser A",
+            "Open photographer dashboard in browser B",
+            "Browser C (customer A) books photographer B",
+            "Verify photographer B sees new_booking toast in browser B",
+            "Photographer B accepts in browser B",
+            "Verify customer A sees booking_accepted toast in browser A"
+          ],
+          "acceptance_criteria": [
+            "Notifications delivered within 2 seconds",
+            "No cross-user notification leakage"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "M16",
+      "name": "Deployment & DevOps",
+      "description": "Production deployment and configuration",
+      "tasks": [
+        {
+          "id": "T16.01",
+          "title": "Environment Configuration",
+          "description": "Complete .env with all required variables for production",
+          "priority": "critical",
+          "status": "in-progress",
+          "type": "devops",
+          "file": "backend/.env",
+          "subtasks": [
+            "MONGO_URI: Atlas production cluster URI",
+            "JWT_SECRET: 64-byte random hex (see T14.06)",
+            "GROQ_API_KEY: from console.groq.com",
+            "NODE_ENV=production",
+            "PORT=5055",
+            "FRONTEND_URL: production domain (e.g. https://snapbook.netlify.app)",
+            "COMMISSION_RATE=10 (platform commission percentage)",
+            "SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS (for forgot password emails)",
+            "Create backend/.env.example with placeholder values (commit this)"
+          ],
+          "acceptance_criteria": [
+            ".env.example committed with all keys but no real values",
+            ".env listed in .gitignore"
+          ]
+        },
+        {
+          "id": "T16.02",
+          "title": ".gitignore Setup",
+          "description": "Comprehensive .gitignore to prevent sensitive/large files from git tracking",
+          "priority": "critical",
+          "status": "pending",
+          "type": "devops",
+          "subtasks": [
+            "backend/.env",
+            "backend/node_modules/",
+            "frontend/node_modules/ (if any)",
+            "backend/uploads/ (user uploaded portfolio images)",
+            ".DS_Store",
+            "*.log",
+            "*.pem",
+            "dist/ and build/ folders"
+          ],
+          "acceptance_criteria": [
+            "git status shows .env as untracked and ignored",
+            "git status shows uploads/ as untracked and ignored"
+          ]
+        },
+        {
+          "id": "T16.03",
+          "title": "Backend Deployment (Render.com Recommended)",
+          "description": "Deploy Express backend to cloud provider",
+          "priority": "medium",
+          "status": "pending",
+          "type": "devops",
+          "subtasks": [
+            "Create account on Render.com (free tier available)",
+            "Create new Web Service, point to backend/ directory",
+            "Set Build Command: npm install",
+            "Set Start Command: node server.js",
+            "Set all environment variables in Render dashboard (not in code)",
+            "Configure health check at GET /api",
+            "Test all endpoints after deployment with production URL"
+          ],
+          "acceptance_criteria": [
+            "Backend accessible at https://snapbook-api.onrender.com (or similar)",
+            "All env vars set in platform, not hardcoded"
+          ]
+        },
+        {
+          "id": "T16.04",
+          "title": "Frontend Deployment (Netlify Recommended)",
+          "description": "Deploy static frontend to CDN-backed hosting",
+          "priority": "medium",
+          "status": "pending",
+          "type": "devops",
+          "subtasks": [
+            "Update API base URL in all frontend JS files to production backend URL",
+            "Create netlify.toml with redirect rule: /* -> /index.html (SPA fallback)",
+            "Deploy frontend/public/ directory to Netlify",
+            "Configure custom domain if available",
+            "Enable HTTPS (automatic on Netlify)"
+          ],
+          "acceptance_criteria": [
+            "Frontend loads at production HTTPS URL",
+            "All API calls hit production backend (no localhost references)",
+            "SPA routing works for /customer-dashboard, etc."
+          ]
+        },
+        {
+          "id": "T16.05",
+          "title": "MongoDB Atlas Production Hardening",
+          "description": "Secure Atlas cluster for production traffic",
+          "priority": "high",
+          "status": "pending",
+          "type": "devops",
+          "subtasks": [
+            "Whitelist only Render.com server IPs in Atlas Network Access (not 0.0.0.0/0)",
+            "Create dedicated DB user with readWrite on specific DB only (not admin)",
+            "Enable Atlas automated backups (daily snapshots)",
+            "Set up Atlas alerts for: connection count > 50, long query > 1s",
+            "Use separate Atlas projects for dev and prod environments"
+          ],
+          "acceptance_criteria": [
+            "DB not accessible from arbitrary IPs",
+            "Dedicated non-admin DB user used",
+            "Automated backups enabled"
+          ]
+        }
+      ]
+    }
+  ],
+  "summary": {
+    "total_modules": 16,
+    "total_tasks": 109,
+    "by_status": {
+      "completed": 22,
+      "in-progress": 28,
+      "pending": 59,
+      "blocked": 0
+    },
+    "by_priority": {
+      "critical": 34,
+      "high": 45,
+      "medium": 23,
+      "low": 7
+    },
+    "by_type": {
+      "frontend": 22,
+      "backend": 38,
+      "database": 11,
+      "ai": 5,
+      "security": 14,
+      "performance": 5,
+      "testing": 8,
+      "devops": 6
+    },
+    "critical_path_before_launch": [
+      "T14.06 — Strengthen weak JWT_SECRET",
+      "T14.03 — Block inactive users in auth middleware",
+      "T14.05 — Fix double booking prevention",
+      "T11.03 — MongoDB injection prevention (express-mongo-sanitize)",
+      "T11.01 — Helmet.js HTTP security headers",
+      "T11.06 — Rate limiting on login/register endpoints",
+      "T16.09 — Add .env to .gitignore (before any git push)",
+      "T05.05 — Accept/Decline booking API",
+      "T10.01 + T10.02 — Payment page UI and API",
+      "T04.03 — Availability calendar UI for photographers",
+      "T07.02 — Admin get all users endpoint",
+      "T14.04 — Photographer rating recalculation after review",
+      "T15.01 — Auth flow end-to-end test",
+      "T15.02 — Booking flow happy path test",
+      "T15.05 — Security penetration test checklist"
+    ],
+    "modules_100_percent_complete": [
+      "None — all modules have pending or in-progress tasks"
+    ],
+    "modules_closest_to_done": [
+      "M01 — Authentication (7/10 done)",
+      "M07 — Admin Backend API (3/9 done, most critical ones done)",
+      "M09 — Database Models (5/11 done)"
+    ]
+  }
+}

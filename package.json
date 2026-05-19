@@ -1,0 +1,19 @@
+{
+  "name": "ecommerceproject",
+  "version": "1.0.0",
+  "description": "SnapBook - MERN Stack Ecommerce Project",
+  "scripts": {
+    "start": "cd backend && node server.js",
+    "dev:backend": "cd backend && npx nodemon server.js",
+    "dev:frontend": "cd frontend && npx serve public -l 3000",
+    "install:backend": "cd backend && npm install",
+    "install:frontend": "cd frontend && npm install",
+    "install:all": "npm run install:backend && npm run install:frontend",
+    "seed:coupon": "cd backend && node scripts/seedCoupon.js",
+    "seed:faq": "cd backend && node scripts/seedFAQ.js",
+    "create:admin": "cd backend && node scripts/createadmin.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}

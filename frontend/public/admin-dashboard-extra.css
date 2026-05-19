@@ -1,0 +1,94 @@
+/* Admin Dashboard - extra styles to enhance fallback UI */
+
+.admin-dashboard {
+  max-width: 1100px;
+  margin: 32px auto;
+  padding: 20px;
+  background: var(--surface);
+  border-radius: 12px;
+  box-shadow: 0 12px 36px rgba(15,23,42,0.08);
+}
+
+.admin-dashboard h1 {
+  font-size: 2rem;
+  margin-bottom: 16px;
+  color: var(--text-main);
+}
+
+#photographer-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 14px;
+}
+
+.admin-card {
+  background: linear-gradient(180deg, var(--surface) 0%, var(--surface-raised) 100%);
+  border: 1px solid var(--border-subtle);
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.25);
+}
+
+.admin-card h2 {
+  margin: 0 0 6px 0;
+  font-size: 1.25rem;
+  color: var(--text-main);
+}
+
+.admin-card p { color: var(--text-muted); margin:6px 0 }
+
+.admin-actions {
+  display:flex;
+  gap:8px;
+  margin-top:8px;
+  flex-wrap:wrap;
+}
+
+.admin-actions button {
+  padding:6px 10px;
+  border-radius:8px;
+  border:1px solid transparent;
+  cursor:pointer;
+  font-weight:600;
+  background:var(--surface-soft);
+  color:var(--text-main);
+}
+
+.admin-actions button[data-action="approve"] { background: var(--success-soft); border-color: rgba(52, 211, 153, 0.3); color: var(--success) }
+.admin-actions button[data-action="reject"] { background: var(--danger-soft); border-color: rgba(248, 113, 113, 0.3); color: var(--danger) }
+.admin-actions button[data-action="seo"], .admin-actions button[data-action="portfolio"] { background: var(--primary-soft); border-color: rgba(99, 102, 241, 0.3); color: var(--primary) }
+
+.admin-secondary { margin-top:12px; color:var(--text-muted); font-size:0.95rem }
+
+.admin-inline-form {
+  margin-top:12px;
+  padding:12px;
+  background: var(--surface-raised);
+  border-radius:8px;
+  border: 1px solid var(--border-subtle);
+}
+
+.admin-inline-form-inner label { display:block; margin:8px 0 4px; font-weight:600; color:var(--text-main) }
+.admin-inline-form-inner input, .admin-inline-form-inner textarea { width:100%; padding:8px 10px; border-radius:6px; border:1px solid var(--border-subtle); font-size:0.95rem; background: var(--surface-soft); color: var(--text-main); }
+
+.admin-inline-actions { margin-top:10px; display:flex; gap:8px }
+.admin-inline-actions button { padding:6px 10px; border-radius:8px; cursor:pointer }
+.admin-inline-actions button[data-submit="seo"] { background:var(--primary); color:white; border:none }
+.admin-inline-actions button[data-submit="portfolio"] { background:var(--primary-soft); color:var(--primary); border:1px solid rgba(124,58,237,0.12) }
+
+.admin-processing {
+  display:inline-block;
+  margin-left:8px;
+  padding:4px 8px;
+  font-size:0.85rem;
+  color:var(--text-main);
+  background:var(--primary-soft);
+  border-radius:999px;
+}
+
+.admin-message { text-align:center; padding:28px; color:var(--text-main) }
+
+@media (max-width: 600px) {
+  .admin-dashboard { padding:12px }
+  .admin-card { padding:12px }
+}
