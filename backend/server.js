@@ -51,7 +51,16 @@ const authLimiter = rateLimit({
 // ── Static files FIRST (before pageRoutes) ───────────────────────────────────
 // Serving static assets before pageRoutes prevents route handlers from
 // accidentally intercepting requests for JS/CSS/image files.
-app.use(express.static(path.join(__dirname, "../frontend/public")));
+// Cache HTML for 1 hour, all other assets (JS/CSS/images) for 7 days.
+app.use(express.static(path.join(__dirname, "../frontend/public"), {
+  setHeaders(res, filePath) {
+    if (filePath.endsWith('.html')) {
+      res.setHeader('Cache-Control', 'public, max-age=3600');          // 1 hour
+    } else {
+      res.setHeader('Cache-Control', 'public, max-age=604800, immutable'); // 7 days
+    }
+  },
+}));
 
 // ── SEO page routes ───────────────────────────────────────────────────────────
 // Loaded AFTER static so asset requests are never caught by page handlers.
