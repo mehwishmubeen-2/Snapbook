@@ -20,9 +20,8 @@ const io = socketIo(server, {
 // Attach io to app for use in controllers
 app.io = io;
 
+// ── Core middleware (order matters!) ─────────────────────────────────────────
 app.use(compression());
-
-// ── Security middleware ───────────────────────────────────────────────────────
 app.use(helmet());
 app.use(cors({ origin: ALLOWED_ORIGIN, credentials: true }));
 app.use(express.json({ limit: '10kb' }));
@@ -30,113 +29,77 @@ app.use(express.json({ limit: '10kb' }));
 // ── Rate limiters ─────────────────────────────────────────────────────────────
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 20,                   // max 20 attempts per window
+  max: 20,
   standardHeaders: true,
   legacyHeaders: false,
   message: { success: false, message: 'Too many requests, please try again later.' },
 });
 
-// ── SEO page routes MUST come before express.static ──────────────────────────
-// /photographer/:slug is served as server-side rendered HTML with injected SEO
-// tags so search crawlers see them immediately (no JavaScript required).
+// ── Static files FIRST (before pageRoutes) ───────────────────────────────────
+// Serving static assets before pageRoutes prevents route handlers from
+// accidentally intercepting requests for JS/CSS/image files.
+app.use(express.static(path.join(__dirname, "../frontend/public")));
+
+// ── SEO page routes ───────────────────────────────────────────────────────────
+// Loaded AFTER static so asset requests are never caught by page handlers.
 const pageRoutes = require("./routes/pageRoutes");
 app.use("/", pageRoutes);
 
-// Serve static frontend files
-app.use(express.static(path.join(__dirname, "../frontend/public")));
-
-// Routes
-const authRoutes = require("./routes/authRoutes");
-const adminRoutes = require("./routes/adminRoutes");
+// ── API Routes ────────────────────────────────────────────────────────────────
+const authRoutes         = require("./routes/authRoutes");
+const adminRoutes        = require("./routes/adminRoutes");
 const photographerRoutes = require("./routes/photographerRoutes");
-const cartRoutes = require("./routes/cartRoutes");
-const wishlistRoutes = require("./routes/wishlistRoutes");
-const orderRoutes = require("./routes/orderRoutes");
-
-
-const chatbotRoutes = require("./routes/chatbotRoutes");
-const faqRoutes = require("./routes/faqRoutes");
-const couponRoutes = require("./routes/couponRoutes");
-const analyticsRoutes = require("./routes/analyticsRoutes");
+const cartRoutes         = require("./routes/cartRoutes");
+const wishlistRoutes     = require("./routes/wishlistRoutes");
+const orderRoutes        = require("./routes/orderRoutes");
+const chatbotRoutes      = require("./routes/chatbotRoutes");
+const faqRoutes          = require("./routes/faqRoutes");
+const couponRoutes       = require("./routes/couponRoutes");
+const analyticsRoutes    = require("./routes/analyticsRoutes");
 const availabilityRoutes = require("./routes/availabilityRoutes");
-const packageRoutes = require("./routes/packageRoutes");
-const reviewRoutes = require("./routes/reviewRoutes");
-const disputeRoutes = require("./routes/disputeRoutes");
-const commissionRoutes = require("./routes/commissionRoutes");
-const portfolioRoutes = require("./routes/portfolioRoutes");
-
-const PORT = process.env.PORT || 5055;
-mongoose
-  .connect(process.env.MONGO_URI)
-  .then(() => {
-    console.log("MongoDB Connected");
-    
-  })
-  .catch((err) => console.log(err));
+const packageRoutes      = require("./routes/packageRoutes");
+const reviewRoutes       = require("./routes/reviewRoutes");
+const disputeRoutes      = require("./routes/disputeRoutes");
+const commissionRoutes   = require("./routes/commissionRoutes");
+const portfolioRoutes    = require("./routes/portfolioRoutes");
 
 // Base API health route
 app.get("/api", (req, res) => {
   res.json({ message: "API is running..." });
 });
 
-// Auth routes: register/login, etc. (rate limited)
-app.use("/api/auth", authLimiter, authRoutes);
-
-// Admin routes (must send admin token)
-app.use("/api/admin", adminRoutes);
-
-// Photographer routes (public)
+app.use("/api/auth",          authLimiter, authRoutes);
+app.use("/api/admin",         adminRoutes);
 app.use("/api/photographers", photographerRoutes);
+app.use("/api/cart",          cartRoutes);
+app.use("/api/wishlist",      wishlistRoutes);
+app.use("/api/orders",        orderRoutes);
+app.use("/api/faq",           faqRoutes);
+app.use("/api/coupon",        couponRoutes);
+app.use("/api/analytics",     analyticsRoutes);
+app.use("/api/availability",  availabilityRoutes);
+app.use("/api/packages",      packageRoutes);
+app.use("/api/reviews",       reviewRoutes);
+app.use("/api/disputes",      disputeRoutes);
+app.use("/api/commission",    commissionRoutes);
+app.use("/api/portfolio",     portfolioRoutes);
+app.use("/api/chat",          chatbotRoutes);
 
-// Customer routes (require authentication)
-app.use("/api/cart", cartRoutes);
-app.use("/api/wishlist", wishlistRoutes);
-app.use("/api/orders", orderRoutes);
-
-// FAQ and Coupon routes
-app.use("/api/faq", faqRoutes);
-app.use("/api/coupon", couponRoutes);
-
-// Analytics routes
-app.use("/api/analytics", analyticsRoutes);
-
-// Availability routes
-app.use("/api/availability", availabilityRoutes);
-
-// Package routes
-app.use("/api/packages", packageRoutes);
-
-// Review routes
-app.use("/api/reviews", reviewRoutes);
-
-// Dispute routes
-app.use("/api/disputes", disputeRoutes);
-
-// Commission routes
-app.use("/api/commission", commissionRoutes);
-
-// Portfolio routes (photographer CRUD for their own portfolio)
-app.use("/api/portfolio", portfolioRoutes);
-
-// Chatbot routes
-app.use("/api/chat", chatbotRoutes);
-
-// Socket.io for real-time updates
+// ── Socket.io ─────────────────────────────────────────────────────────────────
 io.on("connection", (socket) => {
   console.log("New client connected:", socket.id);
-
   socket.on("disconnect", () => {
     console.log("Client disconnected:", socket.id);
   });
 });
 
-// SPA fallback: serve index.html for any unknown route (so React Router works for /photographers, etc.)
-app.get(/.*/, (req, res) => {
+// ── SPA fallback ──────────────────────────────────────────────────────────────
+// Must come AFTER all API routes so it only catches unmatched non-API paths.
+app.get(/^(?!\/api).*/, (req, res) => {
   res.sendFile(path.join(__dirname, '../frontend/public', 'index.html'));
 });
 
-// ─── Global Error Handler ────────────────────────────────────────────────────
-// Must be defined AFTER all routes. Four-argument signature is required by Express.
+// ── Global Error Handler ──────────────────────────────────────────────────────
 // eslint-disable-next-line no-unused-vars
 app.use((err, req, res, next) => {
   console.error(`[ERROR] ${req.method} ${req.url} →`, err.message || err);
@@ -149,6 +112,19 @@ app.use((err, req, res, next) => {
   res.status(status).json({ success: false, message });
 });
 
+// ── Start server ──────────────────────────────────────────────────────────────
+// Server starts immediately so Render health checks pass while DB connects.
+// If DB fails, the error is logged but the process exits so Render can restart.
+const PORT = process.env.PORT || 5055;
+
 server.listen(PORT, () => {
   console.log(`Server running at http://localhost:${PORT}`);
 });
+
+mongoose
+  .connect(process.env.MONGO_URI)
+  .then(() => console.log("MongoDB Connected"))
+  .catch((err) => {
+    console.error("MongoDB connection failed:", err);
+    process.exit(1); // Let Render restart the service
+  });
