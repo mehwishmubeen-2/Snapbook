@@ -1,16 +1,7 @@
 // frontend/public/chatbot.js — Creative Sketchbook floating chatbot widget
+// Note: Google Fonts are loaded by each page's <head> — no injection needed here.
 (function () {
   "use strict";
-
-  // ── Inject Google Fonts (idempotent) ───────────────────────
-  if (!document.querySelector('link[data-sb-fonts]')) {
-    const lnk = document.createElement("link");
-    lnk.rel = "stylesheet";
-    lnk.setAttribute("data-sb-fonts", "1");
-    lnk.href =
-      "https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Caveat:wght@400;600;700&family=Inter:wght@400;500;600&display=swap";
-    document.head.appendChild(lnk);
-  }
 
   // ── Styles ─────────────────────────────────────────────────
   const css = `

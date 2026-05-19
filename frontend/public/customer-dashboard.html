@@ -6,7 +6,8 @@
   <title>My Dashboard — SnapBook</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Caveat:wght@400;600;700&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Caveat:wght@400;600;700&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+  <noscript><link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Caveat:wght@400;600;700&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"></noscript>
   <link rel="stylesheet" href="/theme.css" />
   <link rel="stylesheet" href="/styles.css" />
   <style>
@@ -1653,6 +1654,9 @@
 
     ReactDOM.createRoot(document.getElementById('root')).render(<App />);
   </script>
-  <script src="/chatbot.js"></script>
+  <!-- Chatbot: lazy-loaded on first user interaction (~37 KB saved from initial page load) -->
+  <script>
+    (function(){var d=false;function l(){if(d)return;d=true;var s=document.createElement('script');s.src='/chatbot.js';document.body.appendChild(s);}['scroll','click','touchstart','mousemove'].forEach(function(e){window.addEventListener(e,l,{once:true,passive:true});});setTimeout(l,5000);})();
+  </script>
 </body>
 </html>
